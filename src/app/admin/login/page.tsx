@@ -12,7 +12,7 @@ export default async function AdminLoginPage() {
   if ((await auth())?.user) redirect("/admin");
   return (
     <main className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
-      <div className="tile relative hidden lg:block" aria-hidden="true">
+      <div className="lattice relative hidden bg-sky-500 lg:block" aria-hidden="true">
         <div className="absolute inset-x-12 bottom-12 rounded-3xl bg-white/95 p-8">
           <BrandMark className="size-14" />
           <p className="mt-5 font-heading text-3xl font-black leading-tight">Panel pengelola<br />SDIT Al-Ikhlas Serpong</p>

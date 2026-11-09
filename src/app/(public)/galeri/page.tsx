@@ -16,7 +16,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Sear
   const chip = (active: boolean) => `rounded-full px-4 py-1.5 text-sm font-semibold ${active ? "bg-ink text-white" : "bg-white text-ink-soft ring-1 ring-line hover:text-ink"}`;
 
   return <>
-    <PageIntro tone="sun" kicker="Momen sekolah" title={<>Galeri <span className="mark">kegiatan</span></>} intro="Dokumentasi kegiatan belajar, ibadah, dan acara sekolah." />
+    <PageIntro tone="sun" kicker="Momen sekolah" title={<>Galeri <span className="pill-word">kegiatan</span></>} intro="Dokumentasi kegiatan belajar, ibadah, dan acara sekolah." />
     <div className="wrap py-12">
       {categories.length > 0 && (
         <nav className="flex flex-wrap gap-2" aria-label="Kategori galeri">
@@ -29,7 +29,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Sear
           <li key={gallery.id}><GalleryAlbum tone={i % 3} title={gallery.title} description={gallery.description} category={gallery.category} coverUrl={gallery.coverUrl} images={gallery.images} /></li>
         ))}</ul>
       ) : (
-        <div className="mt-8 rounded-3xl border border-dashed border-line bg-white p-10 text-center">
+        <div className="mt-8 rounded-[28px] border border-dashed border-line bg-white p-10 text-center">
           <h2 className="font-heading text-xl font-extrabold">{kategori ? "Belum ada album di kategori ini" : "Belum ada album"}</h2>
           <p className="mt-2 text-ink-soft">Foto kegiatan akan tampil di sini setelah dipublikasikan sekolah.</p>
           {kategori && <Link href="/galeri" className="btn btn-secondary mt-5">Lihat semua album</Link>}

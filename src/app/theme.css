@@ -1,0 +1,42 @@
+@theme {
+  --color-sky-50: #eef7fd;
+  --color-sky-100: #d6ecfa;
+  --color-sky-200: #a9d6f3;
+  --color-sky-300: #6fbbea;
+  --color-sky-500: #2498dc;
+  --color-sky-600: #1782c2;
+  --color-sky-700: #136798;
+  --color-sky-900: #0f3a56;
+
+  --color-leaf-50: #ecf8f2;
+  --color-leaf-100: #cfeedd;
+  --color-leaf-300: #7fd3a9;
+  --color-leaf-500: #34b879;
+  --color-leaf-700: #1f7a4f;
+
+  --color-sun-50: #fff8e5;
+  --color-sun-100: #ffedbf;
+  --color-sun-300: #ffdb85;
+  --color-sun-400: #ffc94a;
+  --color-sun-700: #8a5b00;
+
+  --color-clay-50: #fff1ea;
+  --color-clay-100: #ffd9c7;
+  --color-clay-300: #ffb08c;
+  --color-clay-400: #ff8a55;
+  --color-clay-700: #a8471c;
+
+  --color-paper: #f8fbff;
+  --color-ink: #243447;
+  --color-ink-soft: #52657a;
+  --color-ink-faint: #74879b;
+  --color-line: #dfe8f0;
+  --color-night: #13304a;
+  --color-night-2: #1b3d5c;
+
+  --font-heading: "Nunito Variable", "Nunito", ui-rounded, sans-serif;
+  --font-body: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --ease-ui: cubic-bezier(.2, .8, .2, 1);
+  --ease-enter: cubic-bezier(.22, 1, .36, 1);
+}

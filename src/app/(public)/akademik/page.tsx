@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Akademik", description: "Kurikulum, 
 
 function ProgramList({ title, items, accent, empty }: { title: string; items: string[]; accent: string; empty: string }) {
   return (
-    <section className="rounded-3xl border border-line bg-white p-6 sm:p-7">
+    <section className="rounded-[28px] border border-line bg-white p-6 sm:p-7">
       <h2 className="flex items-center gap-3 font-heading text-xl font-extrabold"><span className={`h-6 w-1.5 rounded-full ${accent}`} aria-hidden="true" />{title}</h2>
       {items.length ? <ul className="mt-4 divide-y divide-line">{items.map((item, i) => <li key={i} className="py-2.5">{item}</li>)}</ul> : <div className="mt-4"><Pending>{empty}</Pending></div>}
     </section>
@@ -24,9 +24,9 @@ export default async function AcademicPage() {
   for (const event of events) (byMonth[event.startsAt.toLocaleDateString("id-ID", { month: "long", year: "numeric" })] ??= []).push(event);
 
   return <>
-    <PageIntro tone="leaf" kicker="Belajar dan bertumbuh" title={<>Kegiatan <span className="mark mark-green">akademik</span></>} intro="Kurikulum, program keislaman, dan kegiatan yang membentuk hari-hari belajar di sekolah." />
+    <PageIntro tone="leaf" kicker="Belajar dan bertumbuh" title={<>Kegiatan <span className="pill-word">akademik</span></>} intro="Kurikulum, program keislaman, dan kegiatan yang membentuk hari-hari belajar di sekolah." />
     <div className="wrap space-y-12 py-14">
-      <section className="grid gap-6 rounded-3xl bg-sky-50 p-7 sm:p-9 md:grid-cols-[220px_1fr]">
+      <section className="grid gap-6 rounded-[28px] bg-sky-50 p-7 sm:p-9 md:grid-cols-[220px_1fr]">
         <h2 className="font-heading text-2xl font-extrabold">Kurikulum</h2>
         {profile?.curriculum ? <p className="prose-school">{profile.curriculum}</p> : <Pending>Informasi kurikulum sedang dilengkapi.</Pending>}
       </section>

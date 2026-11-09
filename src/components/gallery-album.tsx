@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 type ImageItem = { id: string; imageUrl: string; caption: string | null };
-const tiles = ["tile", "tile tile-green", "tile tile-sun"];
+import { Art, toneCycle } from "@/components/brand";
 
 export function GalleryAlbum({ title, description, category, coverUrl, images, tone = 0 }: { title: string; description: string | null; category: string | null; coverUrl: string | null; images: ImageItem[]; tone?: number }) {
   const [index, setIndex] = useState<number | null>(null);
@@ -28,7 +28,7 @@ export function GalleryAlbum({ title, description, category, coverUrl, images, t
   return <>
     <button type="button" onClick={() => count && setIndex(0)} disabled={!count} className="group block w-full text-left disabled:cursor-default">
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-sky-100">
-        {cover ? <Image src={cover} alt="" fill unoptimized sizes="(max-width:640px) 100vw, 380px" className="object-cover" /> : <div className={`${tiles[tone % 3]} size-full`} />}
+        {cover ? <Image src={cover} alt="" fill unoptimized sizes="(max-width:640px) 100vw, 380px" className="object-cover" /> : <Art tone={toneCycle[tone % 4].tone} shape={toneCycle[tone % 4].shape} ink={toneCycle[tone % 4].ink} inset="30%" />}
         {count > 0 && <span className="absolute bottom-3 right-3 rounded-lg bg-white px-2.5 py-1 text-xs font-bold">{count} foto</span>}
       </div>
       {category && <p className="mt-4 text-sm font-semibold text-sky-700">{category}</p>}

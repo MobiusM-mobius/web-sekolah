@@ -30,20 +30,20 @@ export default async function NewsArticlePage({ params }: Props) {
   return (
     <article className="pb-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <header className="border-b border-line bg-clay-50">
-        <div className="wrap max-w-3xl py-10 sm:py-14">
+      <header className="lattice-ink border-b border-line bg-clay-50">
+        <div className="wrap max-w-3xl pb-12 pt-32 sm:pb-16 sm:pt-36">
           <Link href="/berita" className="inline-flex items-center gap-2 text-sm font-bold text-ink-soft hover:text-ink"><ArrowLeft size={16} />Semua berita</Link>
           <p className="kicker mt-8">{post.category?.name ?? "Berita sekolah"}</p>
-          <h1 className="mt-3 font-heading text-4xl font-black leading-tight sm:text-5xl">{post.title}</h1>
+          <h1 className="display display-lg mt-4">{post.title}</h1>
           <p className="mt-5 text-ink-soft">Ditulis oleh <span className="font-semibold text-ink">{post.author.name}</span>{post.publishedAt && <>, <time dateTime={post.publishedAt.toISOString()}>{dateLong(post.publishedAt)}</time></>}</p>
         </div>
       </header>
       <div className="wrap max-w-3xl">
-        {post.coverImageUrl && <div className="relative -mt-0 mt-8 aspect-[16/9] overflow-hidden rounded-3xl bg-sky-100"><Image src={post.coverImageUrl} alt="" fill priority unoptimized sizes="(max-width:768px) 100vw, 768px" className="object-cover" /></div>}
+        {post.coverImageUrl && <div className="relative -mt-0 mt-8 aspect-[16/9] overflow-hidden rounded-[28px] bg-sky-100"><Image src={post.coverImageUrl} alt="" fill priority unoptimized sizes="(max-width:768px) 100vw, 768px" className="object-cover" /></div>}
         {post.excerpt && <p className="mt-10 font-heading text-xl font-bold leading-relaxed text-sky-900">{post.excerpt}</p>}
         <div className="prose-school mt-6">{post.content}</div>
         {related.length > 0 && (
-          <aside className="mt-16 rounded-3xl bg-white p-7 ring-1 ring-line" aria-labelledby="terkait">
+          <aside className="mt-16 rounded-[28px] bg-white p-7 ring-1 ring-line" aria-labelledby="terkait">
             <h2 id="terkait" className="font-heading text-xl font-extrabold">Berita terkait</h2>
             <ul className="mt-4 divide-y divide-line">{related.map((item) => <li key={item.slug}><Link href={`/berita/${item.slug}`} className="flex items-baseline justify-between gap-6 py-3 font-semibold hover:text-sky-700">{item.title}{item.publishedAt && <time className="shrink-0 text-sm font-normal text-ink-faint">{item.publishedAt.toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</time>}</Link></li>)}</ul>
           </aside>

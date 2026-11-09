@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, MessageCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { dateLong, getActivePeriod, getSchoolProfile, whatsappHref } from "@/lib/school";
-import { PageIntro, Pending } from "@/components/brand";
+import { PageIntro, Pending, Shape } from "@/components/brand";
 import { PpdbApplicationForm } from "@/components/ppdb-application-form";
 
 export const metadata: Metadata = { title: "PPDB", description: "Penerimaan peserta didik baru SDIT Al-Ikhlas Serpong: periode, kuota, persyaratan, alur, dan formulir online.", alternates: { canonical: "/ppdb" } };
@@ -27,11 +27,11 @@ export default async function PpdbPage() {
   const status = isOpen ? { label: "Pendaftaran dibuka", tone: "bg-leaf-500 text-white" } : upcoming ? { label: "Segera dibuka", tone: "bg-sun-400 text-ink" } : { label: "Pendaftaran ditutup", tone: "bg-ink-soft text-white" };
 
   return <>
-    <PageIntro kicker="Penerimaan peserta didik baru" title={period ? <>PPDB tahun ajaran <span className="mark">{period.academicYear}</span></> : <>Penerimaan <span className="mark">siswa baru</span></>} intro="Semua informasi pendaftaran ada di halaman ini, termasuk formulir online saat periode dibuka." />
+    <PageIntro kicker="Penerimaan peserta didik baru" title={period ? <>PPDB tahun ajaran <span className="pill-word">{period.academicYear}</span></> : <>Penerimaan <span className="pill-word">siswa baru</span></>} intro="Semua informasi pendaftaran ada di halaman ini, termasuk formulir online saat periode dibuka." />
 
     <div className="wrap space-y-14 py-12">
       {period ? (
-        <section className="tile tile-sun rounded-[28px] p-3" aria-labelledby="periode">
+        <section className="rounded-[36px] bg-sun-400 p-3 lattice" aria-labelledby="periode">
           <div className="grid gap-8 rounded-[20px] bg-white p-6 sm:p-8 lg:grid-cols-[1fr_320px]">
             <div>
               <span className={`inline-block rounded-full px-3 py-1 text-sm font-bold ${status.tone}`}>{status.label}</span>
@@ -52,7 +52,7 @@ export default async function PpdbPage() {
           </div>
         </section>
       ) : (
-        <section className="rounded-3xl border border-dashed border-line bg-white p-8">
+        <section className="rounded-[28px] border border-dashed border-line bg-white p-8">
           <h2 className="font-heading text-2xl font-extrabold">Jadwal PPDB belum diumumkan</h2>
           <p className="mt-2 max-w-xl text-ink-soft">Periode penerimaan berikutnya akan diumumkan di halaman ini.{wa ? " Anda dapat bertanya langsung kepada panitia melalui WhatsApp." : ""}</p>
           {wa && <a href={wa} target="_blank" rel="noreferrer" className="btn btn-green mt-5"><MessageCircle size={18} />Tanya panitia</a>}
@@ -97,18 +97,18 @@ export default async function PpdbPage() {
 
       {faqs.length > 0 && (
         <section aria-labelledby="faq" className="grid gap-8 lg:grid-cols-[300px_1fr]">
-          <h2 id="faq" className="font-heading text-2xl font-extrabold">Pertanyaan yang sering diajukan</h2>
-          <div className="divide-y divide-line rounded-3xl border border-line bg-white">{faqs.map((faq, i) => (
-            <details key={i} className="group p-5 [&_summary::-webkit-details-marker]:hidden">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-bold">{faq.question}<span className="grid size-7 shrink-0 place-items-center rounded-full bg-sky-50 text-sky-700 transition group-open:rotate-45" aria-hidden="true">+</span></summary>
-              <p className="mt-3 text-ink-soft">{faq.answer}</p>
-            </details>
-          ))}</div>
+          <h2 id="faq" className="display display-md">Pertanyaan yang sering diajukan</h2>
+          <dl className="divide-y divide-line rounded-[28px] border border-line bg-white">{faqs.map((faq, i) => (
+            <div key={i} className="p-6">
+              <dt className="flex gap-3 font-heading text-lg font-extrabold"><span className="mt-1 size-4 shrink-0"><Shape kind="star" tone={(["sky", "leaf", "sun", "clay"] as const)[i % 4]} /></span>{faq.question}</dt>
+              <dd className="mt-2 pl-7 text-ink-soft">{faq.answer}</dd>
+            </div>
+          ))}</dl>
         </section>
       )}
 
       {period && wa && (
-        <section className="flex flex-col items-start justify-between gap-4 rounded-3xl bg-leaf-50 p-6 sm:flex-row sm:items-center sm:p-8">
+        <section className="flex flex-col items-start justify-between gap-4 rounded-[28px] bg-leaf-50 p-6 sm:flex-row sm:items-center sm:p-8">
           <div><h2 className="font-heading text-xl font-extrabold">Masih ada pertanyaan?</h2><p className="text-ink-soft">Panitia PPDB siap membantu melalui WhatsApp.</p></div>
           <a href={wa} target="_blank" rel="noreferrer" className="btn btn-green"><MessageCircle size={18} />Hubungi panitia</a>
         </section>

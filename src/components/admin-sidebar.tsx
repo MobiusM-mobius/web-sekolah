@@ -44,13 +44,13 @@ export function AdminSidebar({ user }: { user: { name: string; role: Role } }) {
   const visible = groups.map((g) => ({ ...g, items: g.items.filter((i) => i.roles.includes(user.role)) })).filter((g) => g.items.length);
 
   const nav = (
-    <nav aria-label="Menu admin" className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+    <nav aria-label="Menu admin" className="flex-1 space-y-4 overflow-y-auto px-3 py-3">
       {visible.map((group) => (
         <div key={group.title}>
           <p className="px-3 text-xs font-bold text-white/45">{group.title}</p>
           <ul className="mt-2 space-y-0.5">{group.items.map(({ href, label, icon: Icon }) => (
             <li key={href}><Link href={href} aria-current={active(href) ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[.93rem] font-semibold transition-colors ${active(href) ? "bg-white text-night" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
+              className={`flex items-center gap-3 rounded-xl px-3 py-[7px] text-[.92rem] font-semibold transition-colors ${active(href) ? "bg-white text-night" : "text-white/75 hover:bg-white/10 hover:text-white"}`}>
               <Icon size={18} className={active(href) ? "text-sky-500" : ""} />{label}</Link></li>
           ))}</ul>
         </div>
@@ -59,10 +59,10 @@ export function AdminSidebar({ user }: { user: { name: string; role: Role } }) {
   );
 
   const footer = (
-    <div className="border-t border-white/10 p-4">
+    <div className="border-t border-white/10 px-4 py-3">
       <p className="truncate font-bold text-white">{user.name}</p>
       <p className="text-sm text-white/55">{roleLabel[user.role]}</p>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-2 flex gap-2">
         <Link href="/" target="_blank" className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20"><ExternalLink size={15} />Website</Link>
         <button type="button" onClick={() => signOut({ callbackUrl: "/admin/login" })} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/20"><LogOut size={15} />Keluar</button>
       </div>
@@ -78,7 +78,7 @@ export function AdminSidebar({ user }: { user: { name: string; role: Role } }) {
     {open && <div className="fixed inset-0 z-40 bg-night/60 lg:hidden" onClick={() => setOpen(false)} aria-hidden="true" />}
     <aside className={`fixed inset-y-0 left-0 z-50 flex w-[272px] flex-col bg-night transition-transform lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-auto lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full"}`}>
       <div className="frieze" />
-      <div className="flex items-center justify-between px-5 py-5">
+      <div className="flex items-center justify-between px-5 py-4">
         <Link href="/admin" className="flex items-center gap-3"><BrandMark className="size-10" /><span className="leading-tight"><span className="block font-heading font-extrabold text-white">SDIT Al-Ikhlas</span><span className="text-sm text-white/55">Panel admin</span></span></Link>
         <button type="button" onClick={() => setOpen(false)} className="grid size-9 place-items-center rounded-lg text-white/70 hover:bg-white/10 lg:hidden" aria-label="Tutup menu admin"><X size={20} /></button>
       </div>
