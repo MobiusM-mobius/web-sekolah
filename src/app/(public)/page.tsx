@@ -5,6 +5,7 @@ import { CalendarDays, MapPin, MessageCircle } from "lucide-react";
 import { db } from "@/lib/db";
 import { Mosaic, SectionHeading, Shape, Star, type ShapeKind, type Tile, type Tone } from "@/components/brand";
 import { InkStatement } from "@/components/ink-statement";
+import { HomeMotion, type MotionSection } from "@/components/home-motion";
 import { dateLong, getActivePeriod, getSchoolProfile, whatsappHref } from "@/lib/school";
 
 const appUrl = process.env.APP_URL ?? "http://localhost:3000";
@@ -50,11 +51,22 @@ export default async function HomePage() {
     { tone: "night", shape: "rainbow" },
   ];
 
+  const sections: MotionSection[] = [
+    { id: "beranda", label: "Beranda" },
+    ...(profile?.vision ? [{ id: "visi", label: "Visi sekolah" }] : []),
+    ...(profile?.principalMessage ? [{ id: "sambutan", label: "Sambutan" }] : []),
+    ...(programs.length || strengths.length ? [{ id: "program", label: "Program" }] : []),
+    { id: "berita", label: "Kabar sekolah" },
+    ...(galleries.length || achievements.length ? [{ id: "galeri", label: "Galeri & prestasi" }] : []),
+    { id: "ppdb", label: "PPDB" },
+  ];
+
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+    <HomeMotion sections={sections} />
 
     {/* Hero */}
-    <section className="relative overflow-hidden bg-sky-50 lattice-ink">
+    <section id="beranda" data-scene className="relative overflow-hidden bg-sky-50 lattice-ink">
       <div className="wrap grid items-center gap-12 pb-16 pt-32 sm:pt-36 lg:min-h-[min(860px,100svh)] lg:grid-cols-[1.15fr_.85fr] lg:gap-14 lg:pb-20">
         <div>
           <p className="kicker rise-soft" style={v(0)}>SDIT Al-Ikhlas Serpong</p>
@@ -73,26 +85,26 @@ export default async function HomePage() {
             <Link href="/profil" className="btn btn-secondary !min-h-[54px] !px-7 !text-[1.02rem]">Kenali sekolah</Link>
           </div>
         </div>
-        <Mosaic tiles={heroTiles} cols={3} animate className="mx-auto w-full max-w-[520px]" />
+        <div data-parallax className="mx-auto w-full max-w-[520px]"><Mosaic tiles={heroTiles} cols={3} animate /></div>
       </div>
     </section>
 
     {/* Visit and enrolment facts */}
-    <section className="relative z-10 -mt-8">
+    <section id="info" className="relative z-10 -mt-8 scroll-mt-24">
       <div className="wrap">
-        <dl className="grid overflow-hidden rounded-[28px] bg-night text-white shadow-[0_30px_60px_-30px_rgb(19_48_74/.6)] md:grid-cols-3">
-          <div className="flex gap-4 border-b border-white/10 p-6 md:border-b-0 md:border-r">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-sun-400 text-night"><CalendarDays size={22} /></span>
+        <dl data-reveal="pop" className="grid overflow-hidden rounded-[28px] bg-night text-white shadow-[0_30px_60px_-30px_rgb(19_48_74/.6)] md:grid-cols-3">
+          <div className="hover-wiggle flex gap-4 border-b border-white/10 p-6 md:border-b-0 md:border-r">
+            <span className="wiggle grid size-12 shrink-0 place-items-center rounded-2xl bg-sun-400 text-night"><CalendarDays size={22} /></span>
             <div><dt className="text-sm font-semibold text-white/60">Penerimaan siswa baru</dt>
               <dd className="mt-1 font-heading text-lg font-extrabold">{period ? (isOpen ? `Dibuka sampai ${dateLong(period.closesAt)}` : period.opensAt > now ? `Dibuka ${dateLong(period.opensAt)}` : "Periode sudah ditutup") : "Jadwal segera diumumkan"}</dd></div>
           </div>
-          <div className="flex gap-4 border-b border-white/10 p-6 md:border-b-0 md:border-r">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-leaf-500"><MessageCircle size={22} /></span>
+          <div className="hover-wiggle flex gap-4 border-b border-white/10 p-6 md:border-b-0 md:border-r">
+            <span className="wiggle grid size-12 shrink-0 place-items-center rounded-2xl bg-leaf-500"><MessageCircle size={22} /></span>
             <div><dt className="text-sm font-semibold text-white/60">Tanya langsung</dt>
               <dd className="mt-1 font-heading text-lg font-extrabold">{wa ? <a href={wa} target="_blank" rel="noreferrer" className="underline decoration-white/30 decoration-2 underline-offset-4 hover:decoration-sun-400">Chat WhatsApp sekolah</a> : <Link href="/kontak" className="underline decoration-white/30 decoration-2 underline-offset-4">Lihat kontak sekolah</Link>}</dd></div>
           </div>
-          <div className="flex gap-4 p-6">
-            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-clay-400"><MapPin size={22} /></span>
+          <div className="hover-wiggle flex gap-4 p-6">
+            <span className="wiggle grid size-12 shrink-0 place-items-center rounded-2xl bg-clay-400"><MapPin size={22} /></span>
             <div className="min-w-0"><dt className="text-sm font-semibold text-white/60">Lokasi</dt>
               <dd className="mt-1 line-clamp-2 font-heading text-lg font-extrabold">{profile?.address || "Serpong, Tangerang Selatan"}</dd></div>
           </div>
@@ -102,8 +114,8 @@ export default async function HomePage() {
 
     {/* Statement moment: the school's vision inks word by word */}
     {profile?.vision && (
-      <section className="py-24 sm:py-32" style={{ "--wh-bg": "var(--color-paper)" } as CSSProperties}>
-        <div className="wrap grid gap-10 lg:grid-cols-[220px_1fr]">
+      <section id="visi" className="scroll-mt-24 py-24 sm:py-32" style={{ "--wh-bg": "var(--color-paper)" } as CSSProperties}>
+        <div data-reveal className="wrap grid gap-10 lg:grid-cols-[220px_1fr]">
           <div className="flex items-start gap-3 lg:flex-col">
             <div className="size-16 sm:size-20"><Mosaic cols={1} tiles={[{ tone: "sun", shape: "star", shapeTone: "night" }]} /></div>
             <p className="kicker pt-3 lg:pt-0">Visi sekolah</p>
@@ -118,11 +130,11 @@ export default async function HomePage() {
 
     {/* Principal */}
     {profile?.principalMessage && (
-      <section className={`${profile?.vision ? "" : "pt-24"} pb-24 sm:pb-28`}>
+      <section id="sambutan" className={`scroll-mt-24 ${profile?.vision ? "" : "pt-24"} pb-24 sm:pb-28`}>
         <div className="wrap">
-          <div className="grid items-center gap-10 overflow-hidden rounded-[36px] bg-leaf-500 p-6 text-white sm:p-10 lg:grid-cols-[minmax(0,360px)_1fr] lg:gap-16 lg:p-14">
+          <div data-reveal="tip" className="grid items-center gap-10 overflow-hidden rounded-[36px] bg-leaf-500 p-6 text-white sm:p-10 lg:grid-cols-[minmax(0,360px)_1fr] lg:gap-16 lg:p-14">
             <div className="relative mx-auto w-full max-w-[340px]">
-              <div className="absolute -left-3 -top-3 size-20 sm:-left-5 sm:-top-5 sm:size-24"><Shape kind="star" tone="sun" /></div>
+              <div className="spin-slow absolute -left-3 -top-3 z-10 size-20 sm:-left-5 sm:-top-5 sm:size-24"><Shape kind="star" tone="sun" /></div>
               <div className="arch relative aspect-[4/5] border-[8px] border-white/25 bg-leaf-700">
                 {profile.principalPhotoUrl
                   ? <Image src={profile.principalPhotoUrl} alt={profile.principalName ? `Foto ${profile.principalName}` : "Foto kepala sekolah"} fill unoptimized sizes="340px" className="object-cover" />
@@ -141,9 +153,9 @@ export default async function HomePage() {
 
     {/* Programmes as a bento of colour blocks */}
     {(programs.length > 0 || strengths.length > 0) && (
-      <section className="pb-24 sm:pb-28">
+      <section id="program" className="scroll-mt-24 pb-24 sm:pb-28">
         <div className="wrap">
-          <SectionHeading kicker="Kegiatan belajar" title={<>Program yang mengisi <span className="pill-word" style={{ "--pw": "var(--color-leaf-300)" } as CSSProperties}>hari-hari</span> anak</>} action={<Link href="/akademik" className="btn btn-secondary">Lihat kurikulum</Link>} />
+          <div data-reveal><SectionHeading kicker="Kegiatan belajar" title={<>Program yang mengisi <span className="pill-word" style={{ "--pw": "var(--color-leaf-300)" } as CSSProperties}>hari-hari</span> anak</>} action={<Link href="/akademik" className="btn btn-secondary">Lihat kurikulum</Link>} /></div>
           {programs.length > 0 && (
             <ul className="mt-12 grid auto-rows-[minmax(170px,auto)] gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {programs.map((program, i) => {
@@ -151,19 +163,19 @@ export default async function HomePage() {
                 const wide = i === 0 || (i === 3 && programs.length > 4);
                 const textColor = c.tone === "sun" ? "text-night" : "text-white";
                 return (
-                  <li key={`${program}-${i}`} className={`relative flex flex-col justify-between overflow-hidden rounded-[28px] p-6 ${{ sky: "bg-sky-500", sun: "bg-sun-400", leaf: "bg-leaf-500", clay: "bg-clay-400", night: "bg-night", white: "bg-white", paper: "bg-paper" }[c.tone]} ${textColor} ${wide ? "sm:col-span-2" : ""}`}>
-                    <div className={`absolute -right-5 -top-5 ${wide ? "size-36" : "size-24"} opacity-90`}><Shape kind={c.shape} tone={c.ink} /></div>
+                  <li key={`${program}-${i}`} data-reveal="pop" style={v(i)} className={wide ? "sm:col-span-2" : ""}><div data-tilt data-burst className={`relative flex h-full min-h-[170px] cursor-pointer select-none flex-col justify-between overflow-hidden rounded-[28px] p-6 ${{ sky: "bg-sky-500", sun: "bg-sun-400", leaf: "bg-leaf-500", clay: "bg-clay-400", night: "bg-night", white: "bg-white", paper: "bg-paper" }[c.tone]} ${textColor}`}>
+                    <div className={`card-glyph absolute -right-5 -top-5 ${wide ? "size-36" : "size-24"} opacity-90`}><Shape kind={c.shape} tone={c.ink} /></div>
                     <span className="relative font-heading text-sm font-extrabold opacity-75">Program</span>
                     <p className={`relative mt-10 max-w-[18ch] font-heading font-black leading-[1.05] tracking-tight ${wide ? "text-[2rem] sm:text-[2.4rem]" : "text-[1.55rem]"}`}>{program}</p>
-                  </li>
+                  </div></li>
                 );
               })}
             </ul>
           )}
           {strengths.length > 0 && (
-            <div className="mt-6 grid gap-6 rounded-[28px] border border-line bg-white p-6 sm:p-8 lg:grid-cols-[260px_1fr]">
+            <div data-reveal className="mt-6 grid gap-6 rounded-[28px] border border-line bg-white p-6 sm:p-8 lg:grid-cols-[260px_1fr]">
               <h3 className="font-heading text-2xl font-black">Mengapa orang tua memilih kami</h3>
-              <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">{strengths.map((item, i) => <li key={`${item}-${i}`} className="flex gap-3 text-[1.02rem]"><Star className="mt-1 size-5 shrink-0" tone={(["sky", "leaf", "sun", "clay"] as Tone[])[i % 4]} /><span>{item}</span></li>)}</ul>
+              <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">{strengths.map((item, i) => <li key={`${item}-${i}`} className="hover-spin flex gap-3 text-[1.02rem]"><Star className="spin mt-1 size-5 shrink-0" tone={(["sky", "leaf", "sun", "clay"] as Tone[])[i % 4]} /><span>{item}</span></li>)}</ul>
             </div>
           )}
         </div>
@@ -171,12 +183,12 @@ export default async function HomePage() {
     )}
 
     {/* News */}
-    <section className="bg-white py-24 sm:py-28">
+    <section id="berita" className="scroll-mt-24 bg-white py-24 sm:py-28">
       <div className="wrap">
-        <SectionHeading kicker="Kabar sekolah" title={<>Cerita terbaru dari <span className="pill-word" style={{ "--pw": "var(--color-clay-300)" } as CSSProperties}>kelas</span></>} action={<Link href="/berita" className="btn btn-secondary">Semua berita</Link>} />
+        <div data-reveal><SectionHeading kicker="Kabar sekolah" title={<>Cerita terbaru dari <span className="pill-word" style={{ "--pw": "var(--color-clay-300)" } as CSSProperties}>kelas</span></>} action={<Link href="/berita" className="btn btn-secondary">Semua berita</Link>} /></div>
         <div className={`mt-12 grid gap-6 ${announcements.length ? "lg:grid-cols-[1.55fr_1fr]" : ""}`}>
           {featured ? (
-            <div className="grid gap-6">
+            <div data-reveal="pop" className="grid gap-6">
               <Link href={`/berita/${featured.slug}`} className="card-link group grid overflow-hidden border border-line bg-paper hover:border-sky-200 md:grid-cols-[1.1fr_1fr]">
                 <div className="relative aspect-[4/3] overflow-hidden bg-sky-500 md:aspect-auto md:min-h-[300px]">
                   {featured.coverImageUrl ? <Image src={featured.coverImageUrl} alt="" fill unoptimized sizes="(max-width:768px) 100vw, 420px" className="zoom object-cover" /> : <div className="zoom lattice absolute inset-0 grid place-items-center"><div className="size-1/3"><Shape kind="arch" tone="sun" /></div></div>}
@@ -189,7 +201,7 @@ export default async function HomePage() {
               </Link>
               {otherPosts.length > 0 && (
                 <ul className="grid gap-3 sm:grid-cols-3">{otherPosts.map((post, i) => (
-                  <li key={post.id}><Link href={`/berita/${post.slug}`} className="card-link group flex h-full flex-col gap-3 border border-line bg-paper p-5 hover:border-sky-200">
+                  <li key={post.id} data-reveal style={v(i + 1)}><Link href={`/berita/${post.slug}`} className="card-link group flex h-full flex-col gap-3 border border-line bg-paper p-5 hover:border-sky-200">
                     <span className={`size-3 rounded-full ${["bg-leaf-500", "bg-sun-400", "bg-clay-400"][i % 3]}`} aria-hidden="true" />
                     <span className="font-heading text-lg font-extrabold leading-snug group-hover:text-sky-700">{post.title}</span>
                     {post.publishedAt && <time className="mt-auto text-sm text-ink-faint">{dateLong(post.publishedAt)}</time>}
@@ -198,19 +210,19 @@ export default async function HomePage() {
               )}
             </div>
           ) : (
-            <div className="grid place-items-center rounded-[28px] border border-dashed border-line bg-paper p-12 text-center">
-              <div className="mx-auto size-16"><Shape kind="arch" tone="sky" /></div>
+            <div data-reveal="pop" className="grid place-items-center rounded-[28px] border border-dashed border-line bg-paper p-12 text-center">
+              <div className="float-slow mx-auto size-16"><Shape kind="arch" tone="sky" /></div>
               <h3 className="mt-5 font-heading text-2xl font-black">Belum ada berita</h3>
               <p className="mt-2 max-w-sm text-ink-soft">Kabar kegiatan sekolah akan tampil di sini setelah diterbitkan.</p>
             </div>
           )}
 
           {announcements.length > 0 && (
-            <aside className="relative overflow-hidden rounded-[28px] bg-sun-400 p-7 text-night sm:p-8" aria-labelledby="papan-pengumuman">
-              <div className="absolute -right-10 -top-10 size-40 opacity-25"><Shape kind="star" tone="white" /></div>
+            <aside data-reveal="right" style={v(1)} className="relative overflow-hidden rounded-[28px] bg-sun-400 p-7 text-night sm:p-8" aria-labelledby="papan-pengumuman">
+              <div className="spin-slow absolute -right-10 -top-10 size-40 opacity-25"><Shape kind="star" tone="white" /></div>
               <h3 id="papan-pengumuman" className="relative font-heading text-2xl font-black">Papan pengumuman</h3>
               <ul className="relative mt-6 space-y-3">{announcements.map((item) => (
-                <li key={item.id} className="rounded-2xl bg-white/85 p-5">
+                <li key={item.id} className="hover-slide rounded-2xl bg-white/85 p-5">
                   <p className="font-heading text-lg font-extrabold leading-snug">{item.title}</p>
                   <p className="mt-1.5 line-clamp-3 text-[.95rem] text-ink-soft">{item.body}</p>
                 </li>
@@ -223,11 +235,11 @@ export default async function HomePage() {
 
     {/* Gallery and achievements */}
     {(galleries.length > 0 || achievements.length > 0) && (
-      <section className="py-24 sm:py-28">
+      <section id="galeri" className="scroll-mt-24 py-24 sm:py-28">
         <div className="wrap grid gap-16 lg:grid-cols-[1.25fr_1fr]">
           {galleries.length > 0 && <div>
-            <SectionHeading kicker="Momen sekolah" title="Galeri kegiatan" action={<Link href="/galeri" className="link">Buka galeri</Link>} />
-            <div className="mt-10 grid grid-cols-2 gap-3">
+            <div data-reveal><SectionHeading kicker="Momen sekolah" title="Galeri kegiatan" action={<Link href="/galeri" className="link">Buka galeri</Link>} /></div>
+            <div data-reveal="pop" style={v(1)} className="mt-10 grid grid-cols-2 gap-3">
               {galleries.map((album, i) => { const cover = album.coverUrl || album.images[0]?.imageUrl; const c = cycle[i % cycle.length]; return (
                 <Link key={album.id} href="/galeri" className={`card-link group relative overflow-hidden ${i === 0 ? "col-span-2 aspect-[16/9]" : "aspect-square"} ${{ sky: "bg-sky-500", sun: "bg-sun-400", leaf: "bg-leaf-500", clay: "bg-clay-400", night: "bg-night", white: "bg-white", paper: "bg-paper" }[c.tone]}`}>
                   {cover ? <Image src={cover} alt={album.title} fill unoptimized sizes="(max-width:768px) 50vw, 360px" className="zoom object-cover" /> : <div className="zoom absolute inset-[22%]"><Shape kind={c.shape} tone={c.ink} /></div>}
@@ -237,12 +249,12 @@ export default async function HomePage() {
             </div>
           </div>}
           {achievements.length > 0 && <div>
-            <SectionHeading kicker="Apresiasi" title="Prestasi siswa" action={<Link href="/prestasi" className="link">Semua prestasi</Link>} />
+            <div data-reveal><SectionHeading kicker="Apresiasi" title="Prestasi siswa" action={<Link href="/prestasi" className="link">Semua prestasi</Link>} /></div>
             <ul className="mt-10 space-y-3">{achievements.map((item, i) => (
-              <li key={item.id} className="flex items-center gap-4 rounded-[24px] border border-line bg-white p-3 pr-5">
-                <div className={`arch relative size-[72px] shrink-0 ${["bg-sun-400", "bg-sky-500", "bg-clay-400", "bg-leaf-500"][i % 4]}`}>{item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="72px" className="object-cover" /> : <div className="absolute inset-[22%]"><Shape kind="star" tone="white" /></div>}</div>
+              <li key={item.id} data-reveal="right" style={v(i)}><div className="hover-lift flex items-center gap-4 rounded-[24px] border border-line bg-white p-3 pr-5">
+                <div className={`badge arch relative size-[72px] shrink-0 ${["bg-sun-400", "bg-sky-500", "bg-clay-400", "bg-leaf-500"][i % 4]}`}>{item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="72px" className="object-cover" /> : <div className="absolute inset-[22%]"><Shape kind="star" tone="white" /></div>}</div>
                 <div className="min-w-0"><p className="font-heading text-lg font-extrabold leading-snug">{item.title}</p><p className="text-sm text-ink-soft">{[item.category, item.achievedAt?.getFullYear()].filter(Boolean).join(", ")}</p></div>
-              </li>
+              </div></li>
             ))}</ul>
           </div>}
         </div>
@@ -250,9 +262,9 @@ export default async function HomePage() {
     )}
 
     {/* Enrolment call to action */}
-    <section className="pb-24 sm:pb-28">
+    <section id="ppdb" className="scroll-mt-24 pb-24 sm:pb-28">
       <div className="wrap">
-        <div className="lattice relative grid items-center gap-10 overflow-hidden rounded-[40px] bg-sky-500 px-7 py-12 text-white sm:px-12 sm:py-16 lg:grid-cols-[1.2fr_.8fr]">
+        <div data-reveal="tip" className="lattice relative grid items-center gap-10 overflow-hidden rounded-[40px] bg-sky-500 px-7 py-12 text-white sm:px-12 sm:py-16 lg:grid-cols-[1.2fr_.8fr]">
           <div className="relative">
             <p className="font-heading text-lg font-extrabold text-sun-300">{period ? `PPDB tahun ajaran ${period.academicYear}` : "Penerimaan peserta didik baru"}</p>
             <h2 className="display display-lg mt-3">{isOpen ? "Pendaftaran sudah dibuka." : "Siapkan pendaftaran putra-putri Anda."}</h2>
@@ -262,7 +274,7 @@ export default async function HomePage() {
               <Link href="/ppdb/cek-status" className="btn btn-ghost-light !min-h-[54px] !px-7">Cek status pendaftaran</Link>
             </div>
           </div>
-          <div className="relative mx-auto w-full max-w-[340px]"><Shape kind="rainbow" className="w-full" /><div className="absolute bottom-0 left-1/2 size-[18%] -translate-x-1/2"><Shape kind="star" tone="white" /></div></div>
+          <div data-burst className="float-slow relative mx-auto w-full max-w-[340px] cursor-pointer" aria-hidden="true"><Shape kind="rainbow" className="w-full" /><div className="absolute bottom-0 left-1/2 size-[18%] -translate-x-1/2"><div className="spin-slow size-full"><Shape kind="star" tone="white" /></div></div></div>
         </div>
       </div>
     </section>

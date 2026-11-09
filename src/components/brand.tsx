@@ -43,8 +43,8 @@ export function Mosaic({ tiles, cols, className = "", animate = false }: { tiles
   return (
     <div className={`grid gap-2.5 sm:gap-3 ${className}`} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} aria-hidden="true">
       {tiles.map((tile, i) => (
-        <div key={i} className={`relative overflow-hidden ${ground[tile.tone]} ${tile.span ?? "aspect-square"} ${tile.round ?? "rounded-[22%]"} ${animate ? "settle" : ""}`} style={animate ? ({ "--i": i } as CSSProperties) : undefined}>
-          {tile.content ?? (tile.shape && <div className="absolute inset-[14%]"><Shape kind={tile.shape} tone={tile.shapeTone ?? "white"} rotate={tile.rotate} /></div>)}
+        <div key={i} className={`tile relative overflow-hidden ${ground[tile.tone]} ${tile.span ?? "aspect-square"} ${tile.round ?? "rounded-[22%]"} ${animate ? "settle" : ""}`} style={animate ? ({ "--i": i } as CSSProperties) : undefined}>
+          {tile.content ?? (tile.shape && <div className="tile-glyph absolute inset-[14%]"><Shape kind={tile.shape} tone={tile.shapeTone ?? "white"} rotate={tile.rotate} /></div>)}
         </div>
       ))}
     </div>

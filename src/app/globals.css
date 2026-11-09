@@ -108,8 +108,93 @@
   .wh-word.is-on { color: var(--wh-ink, var(--color-night)); }
 }
 
+/* Homepage motion layer (HomeMotion). Uses the individual translate/rotate/scale properties so it
+   composes with the transform-based entrance and hover styles above instead of fighting them. */
+@layer components {
+  .scroll-meter { position: fixed; inset: 0 0 auto; z-index: 60; height: 4px; pointer-events: none; transform-origin: 0 50%; transform: scaleX(var(--p, 0));
+    background: linear-gradient(90deg, var(--color-sky-500), var(--color-leaf-500) 35%, var(--color-sun-400) 65%, var(--color-clay-400)); }
+
+  .section-rail { position: fixed; right: 18px; top: 50%; z-index: 30; translate: 0 -50%; display: none; }
+  @media (min-width: 1100px) { .section-rail { display: block; } }
+  .section-rail ul { display: grid; gap: 6px; padding: 10px 8px; border-radius: 999px; background: rgb(255 255 255 / .78); backdrop-filter: blur(10px); box-shadow: 0 10px 30px -14px rgb(19 48 74 / .35); }
+  .section-dot { position: relative; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 999px; }
+  .section-dot::before { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--color-line); transition: background-color 200ms var(--ease-ui), scale 300ms var(--ease-enter), rotate 400ms var(--ease-enter), border-radius 300ms var(--ease-ui); }
+  .section-dot[aria-current="true"]::before { background: var(--color-sky-500); scale: 1.5; rotate: 45deg; border-radius: 2px; }
+  .section-dot-label { position: absolute; right: calc(100% + 14px); padding: .3rem .75rem; border-radius: 999px; background: var(--color-night); color: white; font-size: .8rem; font-weight: 700; white-space: nowrap;
+    opacity: 0; translate: 6px 0; pointer-events: none; transition: opacity 160ms var(--ease-ui), translate 220ms var(--ease-enter); }
+  .section-dot:hover .section-dot-label, .section-dot:focus-visible .section-dot-label { opacity: 1; translate: 0 0; }
+  .section-dot:hover::before { background: var(--color-sun-400); scale: 1.4; }
+
+  /* Scroll reveal: hidden only after JS opts in, so no-JS visitors see everything. */
+  .motion-on [data-reveal] { transition: opacity 700ms var(--ease-enter), translate 800ms var(--ease-enter), scale 800ms var(--ease-enter), rotate 800ms var(--ease-enter); transition-delay: calc(var(--i, 0) * 90ms); }
+  .motion-on [data-reveal]:not(.is-in) { opacity: 0; translate: 0 36px; }
+  .motion-on [data-reveal="pop"]:not(.is-in) { translate: 0 18px; scale: .9; }
+  .motion-on [data-reveal="left"]:not(.is-in) { translate: -48px 0; }
+  .motion-on [data-reveal="right"]:not(.is-in) { translate: 48px 0; }
+  .motion-on [data-reveal="tip"]:not(.is-in) { translate: 0 30px; rotate: -4deg; }
+
+  /* Hero mosaic: tiles drift against the cursor at different depths, glyphs spin on hover. */
+  [data-parallax] .tile { translate: calc(var(--px, 0) * var(--d, 14px)) calc(var(--py, 0) * var(--d, 14px)); transition: translate 500ms var(--ease-enter), scale 300ms var(--ease-enter); }
+  [data-parallax] .tile:nth-child(2) { --d: -10px; }
+  [data-parallax] .tile:nth-child(3) { --d: 26px; }
+  [data-parallax] .tile:nth-child(4) { --d: -22px; }
+  [data-parallax] .tile:nth-child(5) { --d: 32px; }
+  [data-parallax] .tile:nth-child(6) { --d: -18px; }
+  [data-parallax] .tile-glyph { transition: rotate 700ms var(--ease-enter), scale 400ms var(--ease-enter); animation: float-y 5s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -700ms); }
+  [data-parallax] .tile { cursor: pointer; }
+  @media (hover: hover) and (pointer: fine) {
+    [data-parallax] .tile:hover { scale: 1.05; }
+    [data-parallax] .tile:hover .tile-glyph { rotate: 90deg; scale: 1.12; }
+  }
+  [data-parallax] .tile.is-popped .tile-glyph { animation: glyph-pop 650ms var(--ease-enter), float-y 5s ease-in-out 650ms infinite; }
+  @keyframes float-y { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+  @keyframes glyph-pop { 0% { scale: 1; } 35% { scale: .78; rotate: -30deg; } 70% { scale: 1.2; rotate: 200deg; } 100% { scale: 1; rotate: 180deg; } }
+
+  /* Tilt cards with a soft spotlight following the cursor. */
+  [data-tilt] { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 400ms var(--ease-enter), box-shadow 300ms var(--ease-ui); will-change: transform; }
+  [data-tilt]::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 250ms var(--ease-ui);
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / .32), transparent 65%); }
+  [data-tilt] .card-glyph { transition: rotate 700ms var(--ease-enter), scale 500ms var(--ease-enter), translate 500ms var(--ease-enter); }
+  @media (hover: hover) and (pointer: fine) {
+    [data-tilt]:hover { box-shadow: 0 30px 50px -28px rgb(19 48 74 / .55); }
+    [data-tilt]:hover::after { opacity: 1; }
+    [data-tilt]:hover .card-glyph { rotate: 75deg; scale: 1.15; translate: -8px 8px; }
+  }
+  [data-tilt].is-popped .card-glyph { animation: glyph-pop 650ms var(--ease-enter); }
+
+  /* Smaller hover moments. */
+  .hover-wiggle { transition: background-color 200ms var(--ease-ui); }
+  .hover-wiggle .wiggle { transition: rotate 300ms var(--ease-enter), scale 300ms var(--ease-enter); }
+  .hover-slide { transition: translate 260ms var(--ease-enter), background-color 200ms var(--ease-ui), box-shadow 260ms var(--ease-ui); }
+  .hover-lift { transition: translate 260ms var(--ease-enter), border-color 200ms var(--ease-ui), box-shadow 260ms var(--ease-ui); }
+  .hover-lift .badge { transition: rotate 500ms var(--ease-enter), scale 400ms var(--ease-enter); }
+  .hover-spin .spin { transition: rotate 600ms var(--ease-enter), scale 300ms var(--ease-enter); }
+  @media (hover: hover) and (pointer: fine) {
+    .hover-wiggle:hover { background-color: rgb(255 255 255 / .05); }
+    .hover-wiggle:hover .wiggle { animation: wiggle 500ms var(--ease-ui); scale: 1.1; }
+    .hover-slide:hover { translate: 6px 0; background-color: white; box-shadow: 0 12px 24px -16px rgb(19 48 74 / .45); }
+    .hover-lift:hover { translate: 0 -4px; border-color: var(--color-sky-200); box-shadow: 0 20px 34px -24px rgb(19 48 74 / .5); }
+    .hover-lift:hover .badge { rotate: -8deg; scale: 1.08; }
+    .hover-spin:hover .spin { rotate: 135deg; scale: 1.2; }
+  }
+  @keyframes wiggle { 0%, 100% { rotate: 0deg; } 25% { rotate: -12deg; } 60% { rotate: 9deg; } }
+
+  .float-slow { animation: float-y 6s ease-in-out infinite; }
+  .spin-slow { animation: spin-slow 24s linear infinite; }
+  @keyframes spin-slow { to { rotate: 360deg; } }
+
+  /* Click feedback. */
+  .card-link { position: relative; isolation: isolate; }
+  .btn { overflow: hidden; isolation: isolate; }
+  .ripple { position: absolute; z-index: 2; border-radius: 999px; pointer-events: none; background: currentColor; opacity: .22; scale: 0; animation: ripple 650ms var(--ease-enter) forwards; }
+  @keyframes ripple { to { scale: 1; opacity: 0; } }
+  .burst-star { position: fixed; z-index: 80; width: 18px; height: 18px; margin: -9px 0 0 -9px; pointer-events: none; animation: burst 760ms var(--ease-enter) forwards; }
+  @keyframes burst { 0% { translate: 0 0; scale: .2; rotate: 0deg; opacity: 1; } 70% { opacity: 1; } 100% { translate: var(--bx) var(--by); scale: var(--bs); rotate: var(--br); opacity: 0; } }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  [data-parallax] .tile, [data-parallax] .tile-glyph, [data-tilt], [data-tilt] .card-glyph, .float-slow, .spin-slow, .hover-wiggle .wiggle, .hover-slide, .hover-lift, .hover-lift .badge, .hover-spin .spin { animation: none !important; transition: none !important; translate: none !important; rotate: none !important; scale: none !important; transform: none !important; }
   .rise-line, .rise-soft, .settle { animation: rise-soft-reduced 200ms ease both; animation-delay: 0ms; }
   @keyframes rise-soft-reduced { from { opacity: 0; } to { opacity: 1; } }
   .wh-word { color: var(--wh-ink, var(--color-night)); transition: none; }
