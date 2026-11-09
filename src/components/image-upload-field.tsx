@@ -1,18 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import Image from "next/image";
+import { ImageUp, X } from "lucide-react";
 
-export function ImageUploadField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+export function ImageUploadField({ value, onChange, label = "Gambar" }: { value: string; onChange: (value: string) => void; label?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const id = useId();
+
   async function upload(file?: File) {
     if (!file) return;
     setBusy(true); setError("");
     const data = new FormData(); data.set("file", file);
-    const response = await fetch("/api/admin/media", { method: "POST", body: data });
-    const result = await response.json().catch(() => ({}));
-    if (response.ok) onChange(result.url); else setError(result.error ?? "Unggah gagal.");
+    try {
+      const response = await fetch("/api/admin/media", { method: "POST", body: data });
+      const result = await response.json().catch(() => ({}));
+      if (response.ok) onChange(result.url); else setError(result.error ?? "Gambar gagal diunggah.");
+    } catch { setError("Koneksi terputus saat mengunggah."); }
     setBusy(false);
   }
-  return <div><label className="block text-sm font-bold">URL gambar utama<input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Unggah foto atau masukkan URL" className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-normal" /></label><label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-sky-50 px-3 py-2 text-xs font-bold text-school-blue">{busy ? "Mengunggah..." : "Pilih dan unggah gambar"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => upload(e.target.files?.[0])} className="sr-only" /></label>{error && <p className="mt-1 text-xs text-red-600">{error}</p>}</div>;
+
+  return (
+    <div>
+      <span className="label" id={`${id}-label`}>{label}</span>
+      <div className="mt-2 flex items-center gap-4 rounded-2xl border border-dashed border-line p-3">
+        <div className="relative size-20 shrink-0 overflow-hidden rounded-xl bg-paper">
+          {value.startsWith("https://") ? <Image src={value} alt="" fill unoptimized sizes="80px" className="object-cover" /> : <span className="grid size-full place-items-center text-ink-faint"><ImageUp size={22} /></span>}
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <label className="btn btn-secondary btn-sm cursor-pointer">{busy ? "Mengunggah" : value ? "Ganti gambar" : "Unggah gambar"}<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => upload(e.target.files?.[0])} className="sr-only" aria-labelledby={`${id}-label`} /></label>
+            {value && <button type="button" onClick={() => onChange("")} className="btn btn-danger btn-sm"><X size={14} />Hapus</button>}
+          </div>
+          <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="atau tempel URL https://" className="field !mt-0 !py-1.5 text-sm" aria-label={`URL ${label.toLowerCase()}`} />
+          <p className="text-xs text-ink-faint">JPG, PNG, atau WebP, maksimal 5 MB.</p>
+        </div>
+      </div>
+      {error && <p className="error-text" role="alert">{error}</p>}
+    </div>
+  );
 }

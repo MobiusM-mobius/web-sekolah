@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isUuid } from "@/lib/ids";
 import { requireRole } from "@/lib/authorization";
 import { privateFilePath } from "@/lib/private-files";
 
@@ -9,6 +10,7 @@ export const runtime = "nodejs";
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireRole(["SUPER_ADMIN", "ADMIN_PPDB"]);
   const { id } = await params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Data tidak ditemukan." }, { status: 404 });
   const document = await db.applicantDocument.findUnique({ where: { id }, include: { applicant: { select: { registrationNo: true } } } });
   if (!document) return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
   try {

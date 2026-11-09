@@ -1,37 +1,70 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowUpRight, Menu } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { BrandMark } from "@/components/brand";
 
 const links = [
-  ["Profil", "/profil"],
-  ["Akademik", "/akademik"],
-  ["Berita", "/berita"],
-  ["Galeri", "/galeri"],
-  ["Prestasi", "/prestasi"],
-  ["Kontak", "/kontak"],
-] as const;
+  { label: "Profil", href: "/profil" },
+  { label: "Akademik", href: "/akademik" },
+  { label: "Berita", href: "/berita" },
+  { label: "Galeri", href: "/galeri" },
+  { label: "Prestasi", href: "/prestasi" },
+  { label: "Kontak", href: "/kontak" },
+];
 
 export function PublicHeader() {
+  const pathname = usePathname();
+  // Menu state is keyed to the route so navigating closes it without an effect.
+  const [openFor, setOpenFor] = useState<string | null>(null);
+  const open = openFor === pathname;
+  const setOpen = (value: boolean | ((v: boolean) => boolean)) => setOpenFor((typeof value === "function" ? value(open) : value) ? pathname : null);
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/95 backdrop-blur">
-      <div className="container-shell flex h-[76px] items-center justify-between">
-        <Link href="/" className="flex items-center gap-3" aria-label="Beranda SDIT Al-Ikhlas Serpong">
-          <span className="grid size-11 place-items-center rounded-2xl bg-school-blue text-sm font-black text-white shadow-md shadow-sky-200">AI</span>
-          <span className="leading-tight"><span className="block font-heading text-[15px] font-extrabold">SDIT Al-Ikhlas</span><span className="text-xs text-slate-500">Serpong</span></span>
+    <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
+      <div className="wrap flex h-[72px] items-center justify-between gap-4">
+        <Link href="/" className="flex items-center gap-3" aria-label="SDIT Al-Ikhlas Serpong, beranda">
+          <BrandMark className="size-10 shrink-0" />
+          <span className="leading-none">
+            <span className="block font-heading text-[1.05rem] font-extrabold">SDIT Al-Ikhlas</span>
+            <span className="mt-1 block text-[.8rem] font-semibold text-ink-soft">Serpong</span>
+          </span>
         </Link>
-        <nav className="hidden items-center gap-7 lg:flex" aria-label="Navigasi utama">
-          {links.map(([label, href]) => <Link key={href} href={href} className="text-sm font-semibold text-slate-600 transition hover:text-school-blue">{label}</Link>)}
+
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Navigasi utama">
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? "page" : undefined}
+              className={`rounded-lg px-3 py-2 text-[.93rem] font-semibold transition-colors ${isActive(link.href) ? "bg-sky-50 text-sky-700" : "text-ink-soft hover:text-ink"}`}>
+              {link.label}
+            </Link>
+          ))}
         </nav>
+
         <div className="flex items-center gap-2">
-          <Link href="/ppdb" className="btn-primary !px-4 !py-2.5 text-sm">Daftar PPDB <ArrowUpRight size={16} /></Link>
-          <details className="group relative lg:hidden">
-            <summary className="grid size-10 cursor-pointer list-none place-items-center rounded-xl border border-slate-200 text-slate-700" aria-label="Buka menu"><Menu size={20} /></summary>
-            <nav className="absolute right-0 top-12 flex min-w-52 flex-col rounded-2xl border border-slate-100 bg-white p-2 shadow-xl" aria-label="Navigasi seluler">
-              {links.map(([label, href]) => <Link key={href} href={href} className="rounded-xl px-4 py-3 text-sm font-semibold hover:bg-sky-50">{label}</Link>)}
-              <Link href="/ppdb" className="rounded-xl px-4 py-3 text-sm font-bold text-school-blue">Pendaftaran PPDB</Link>
-            </nav>
-          </details>
+          <Link href="/ppdb" className="btn btn-primary btn-sm whitespace-nowrap sm:min-h-[42px] sm:px-4 sm:text-[.93rem]">Daftar PPDB</Link>
+          <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="menu-seluler"
+            className="grid size-10 place-items-center rounded-xl border border-line lg:hidden" aria-label={open ? "Tutup menu" : "Buka menu"}>
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
       </div>
+
+      {open && (
+        <nav id="menu-seluler" className="border-t border-line bg-white lg:hidden" aria-label="Navigasi seluler">
+          <ul className="wrap grid grid-cols-2 gap-2 py-4">
+            {links.map((link) => (
+              <li key={link.href}>
+                <Link href={link.href} aria-current={isActive(link.href) ? "page" : undefined}
+                  className={`block rounded-xl px-4 py-3 font-semibold ${isActive(link.href) ? "bg-sky-50 text-sky-700" : "bg-paper"}`}>{link.label}</Link>
+              </li>
+            ))}
+            <li className="col-span-2"><Link href="/ppdb/cek-status" className="block rounded-xl bg-sun-50 px-4 py-3 font-semibold text-sun-700">Cek status pendaftaran</Link></li>
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }

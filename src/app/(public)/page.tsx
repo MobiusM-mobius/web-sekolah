@@ -1,43 +1,219 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Leaf, Sparkles, Star } from "lucide-react";
+import { CalendarDays, MapPin, MessageCircle, Quote } from "lucide-react";
 import { db } from "@/lib/db";
+import { BrandMark, SectionHeading, Star } from "@/components/brand";
+import { dateLong, getActivePeriod, getSchoolProfile, whatsappHref } from "@/lib/school";
+
+const accents = ["border-sky-500", "border-leaf-500", "border-sun-400", "border-clay-400"];
+const appUrl = process.env.APP_URL ?? "http://localhost:3000";
 
 export default async function HomePage() {
-  const [profile, posts, announcements, achievements, galleries] = await Promise.all([
-    db.schoolProfile.findFirst().catch(() => null),
-    db.post.findMany({ where: { status: "PUBLISHED", publishedAt: { lte: new Date() } }, orderBy: { publishedAt: "desc" }, take: 3, select: { id: true, title: true, slug: true, excerpt: true, publishedAt: true } }).catch(() => []),
-    db.announcement.findMany({ where: { status: "PUBLISHED", publishedAt: { lte: new Date() }, OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }] }, orderBy: { publishedAt: "desc" }, take: 2, select: { id: true, title: true, slug: true } }).catch(() => []),
-    db.achievement.findMany({ where: { visible: true }, orderBy: { achievedAt: "desc" }, take: 3 }).catch(() => []),
-    db.gallery.findMany({ where: { visible: true }, orderBy: { createdAt: "desc" }, take: 3, include: { images: { orderBy: { sortOrder: "asc" }, take: 1 } } }).catch(() => []),
+  const now = new Date();
+  const [profile, period, posts, announcements, achievements, galleries] = await Promise.all([
+    getSchoolProfile(),
+    getActivePeriod(),
+    db.post.findMany({ where: { status: "PUBLISHED", publishedAt: { lte: now } }, orderBy: { publishedAt: "desc" }, take: 4, select: { id: true, title: true, slug: true, excerpt: true, coverImageUrl: true, publishedAt: true, category: { select: { name: true } } } }).catch(() => []),
+    db.announcement.findMany({ where: { status: "PUBLISHED", publishedAt: { lte: now }, OR: [{ expiresAt: null }, { expiresAt: { gte: now } }] }, orderBy: { publishedAt: "desc" }, take: 4, select: { id: true, title: true, body: true, publishedAt: true } }).catch(() => []),
+    db.achievement.findMany({ where: { visible: true }, orderBy: { achievedAt: "desc" }, take: 4 }).catch(() => []),
+    db.gallery.findMany({ where: { visible: true }, orderBy: { createdAt: "desc" }, take: 5, include: { images: { orderBy: { sortOrder: "asc" }, take: 1 } } }).catch(() => []),
   ]);
+
+  const isOpen = !!period && period.opensAt <= now && period.closesAt >= now;
+  const wa = whatsappHref(profile?.whatsapp, "Assalamu'alaikum, saya ingin bertanya tentang SDIT Al-Ikhlas Serpong.");
+  const programs = [...(profile?.learningPrograms ?? []), ...(profile?.islamicPrograms ?? [])];
+  const strengths = profile?.strengths ?? [];
+  const [featured, ...otherPosts] = posts;
+  const jsonLd = { "@context": "https://schema.org", "@type": "ElementarySchool", name: "SDIT Al-Ikhlas Serpong", url: appUrl, ...(profile?.address ? { address: profile.address } : {}), ...(profile?.phone ? { telephone: profile.phone } : {}), ...(profile?.email ? { email: profile.email } : {}) };
+
   return <>
-    <section className="relative overflow-hidden bg-[#eff8ff]">
-      <div className="container-shell grid min-h-[580px] items-center gap-10 py-16 lg:grid-cols-[1.05fr_.95fr] lg:py-20">
-        <div className="relative z-10"><span className="eyebrow inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm"><Sparkles size={14} /> Sekolah Dasar Islam Terpadu</span><h1 className="mt-6 max-w-2xl font-heading text-5xl font-black leading-[1.08] tracking-tight text-[#203d52] sm:text-6xl">{profile?.heroHeadline || "Selamat datang di SDIT Al-Ikhlas Serpong."}</h1><p className="mt-6 max-w-xl text-base leading-8 text-slate-600">{profile?.heroDescription || "Informasi resmi sekolah dan penerimaan peserta didik baru."}</p><div className="mt-8 flex flex-wrap gap-3"><Link className="btn-primary" href="/profil">Profil Sekolah <ArrowRight size={17} /></Link><Link className="btn-secondary" href="/ppdb">Informasi PPDB</Link></div><div className="mt-9 flex items-center gap-3 text-sm text-slate-500"><span className="flex -space-x-2"><span className="grid size-9 place-items-center rounded-full border-2 border-white bg-school-yellow text-sm"><Star size={15} /></span><span className="grid size-9 place-items-center rounded-full border-2 border-white bg-school-green text-white"><Leaf size={15} /></span></span><span>Website resmi sekolah<br /><b className="text-slate-700">Dikelola oleh SDIT Al-Ikhlas Serpong</b></span></div></div>
-        <div className="relative mx-auto w-full max-w-[510px]">
-          <div className="absolute -left-4 top-10 size-24 rounded-full bg-school-yellow/80" /><div className="absolute -right-2 bottom-12 size-20 rounded-[28px] bg-school-green/70 rotate-12" />
-          <div className="relative flex min-h-[360px] items-end overflow-hidden rounded-[36px] border-8 border-white bg-[#d9f1fd] p-7 shadow-[0_30px_70px_#377eaa22] sm:min-h-[420px]">
-            {profile?.heroImageUrl ? <Image src={profile.heroImageUrl} alt="Foto lingkungan SDIT Al-Ikhlas Serpong" fill unoptimized sizes="(max-width: 768px) 100vw, 510px" className="object-cover" /> : <div className="absolute inset-0 flex flex-col items-center justify-center text-center"><div className="mb-4 grid size-28 place-items-center rounded-[34px] bg-white text-5xl shadow-lg">🏫</div><p className="max-w-xs rounded-2xl bg-white/90 px-5 py-3 text-sm font-bold text-slate-600">Foto sekolah dapat ditambahkan melalui dashboard admin.</p></div>}
-            <div className="relative z-10 w-full rounded-2xl bg-white/95 p-4 shadow-lg backdrop-blur"><p className="text-xs font-bold uppercase tracking-wider text-school-blue">Selamat datang</p><p className="mt-1 font-heading text-lg font-extrabold">SDIT Al-Ikhlas Serpong</p></div>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+
+    {/* Hero */}
+    <section className="relative overflow-hidden">
+      <div className="wrap grid items-center gap-12 pb-14 pt-10 sm:pt-14 lg:grid-cols-[1.1fr_.9fr] lg:pb-20">
+        <div>
+          <p className="kicker">Sekolah Dasar Islam Terpadu di Serpong</p>
+          <h1 className="mt-4 font-heading text-[2.6rem] font-black leading-[1.08] sm:text-[3.6rem]">
+            {profile?.heroHeadline || <>Selamat datang di <span className="mark whitespace-nowrap">SDIT Al-Ikhlas</span> Serpong</>}
+          </h1>
+          <p className="mt-5 max-w-xl text-[1.1rem] leading-8 text-ink-soft">{profile?.heroDescription || "Kenali sekolah kami, ikuti kabar terbaru, dan temukan informasi penerimaan peserta didik baru di sini."}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/ppdb" className="btn btn-primary">{isOpen ? "Daftar PPDB sekarang" : "Informasi PPDB"}</Link>
+            <Link href="/profil" className="btn btn-secondary">Kenali sekolah kami</Link>
+          </div>
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[440px]">
+          <div className="absolute -right-6 -top-6 size-40 rounded-full bg-sun-400 sm:-right-10" aria-hidden="true" />
+          <div className="absolute -bottom-5 -left-5 size-24 rounded-[28px] bg-leaf-500" aria-hidden="true" />
+          <div className="arch relative aspect-[4/5] border-[10px] border-white bg-sky-500 shadow-[0_24px_60px_-20px_rgba(19,103,152,.45)]">
+            {profile?.heroImageUrl
+              ? <Image src={profile.heroImageUrl} alt="Suasana SDIT Al-Ikhlas Serpong" fill priority unoptimized sizes="(max-width: 1024px) 90vw, 440px" className="object-cover" />
+              : <div className="tile grid size-full place-items-center"><BrandMark className="size-36 drop-shadow-[0_8px_0_rgba(15,58,86,.25)]" /></div>}
           </div>
         </div>
       </div>
-      <div className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full border-[36px] border-white/60" />
+
+      {/* Practical info instead of invented statistics */}
+      <div className="wrap pb-14">
+        <dl className="grid overflow-hidden rounded-2xl border border-line bg-white md:grid-cols-3 md:divide-x md:divide-line">
+          <div className="flex gap-4 border-b border-line p-5 md:border-b-0">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-sun-50 text-sun-700"><CalendarDays size={21} /></span>
+            <div><dt className="text-sm font-semibold text-ink-soft">Penerimaan siswa baru</dt>
+              <dd className="mt-0.5 font-bold">{period ? (isOpen ? `Dibuka hingga ${dateLong(period.closesAt)}` : period.opensAt > now ? `Dibuka ${dateLong(period.opensAt)}` : "Periode telah ditutup") : "Jadwal segera diumumkan"}</dd></div>
+          </div>
+          <div className="flex gap-4 border-b border-line p-5 md:border-b-0">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-leaf-50 text-leaf-700"><MessageCircle size={21} /></span>
+            <div><dt className="text-sm font-semibold text-ink-soft">Tanya langsung</dt>
+              <dd className="mt-0.5 font-bold">{wa ? <a href={wa} target="_blank" rel="noreferrer" className="link">Chat WhatsApp sekolah</a> : <Link href="/kontak" className="link">Lihat kontak sekolah</Link>}</dd></div>
+          </div>
+          <div className="flex gap-4 p-5">
+            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-clay-50 text-clay-700"><MapPin size={21} /></span>
+            <div><dt className="text-sm font-semibold text-ink-soft">Lokasi</dt>
+              <dd className="mt-0.5 font-bold">{profile?.address ? <Link href="/kontak" className="line-clamp-2 hover:underline">{profile.address}</Link> : "Serpong, Tangerang Selatan"}</dd></div>
+          </div>
+        </dl>
+      </div>
     </section>
 
-    <section className="container-shell section-space"><div className="grid items-start gap-10 lg:grid-cols-[.9fr_1.1fr]"><div><span className="eyebrow">Sambutan kepala sekolah</span><h2 className="mt-3 font-heading text-3xl font-black">Bersama mendampingi<br />setiap langkah tumbuh.</h2><div className="mt-5 h-1 w-16 rounded-full bg-school-yellow" /></div><div className="soft-card p-7 sm:p-9"><p className="text-base leading-8 text-slate-600">{profile?.principalMessage || "Sambutan kepala sekolah belum tersedia. Admin sekolah dapat melengkapi pesan dan profil kepala sekolah melalui pengaturan profil."}</p><p className="mt-6 font-bold">{profile?.principalName || "Nama kepala sekolah belum diisi"}</p><p className="text-sm text-slate-500">Kepala SDIT Al-Ikhlas Serpong</p></div></div></section>
+    {/* Principal's welcome */}
+    {profile?.principalMessage && (
+      <section className="border-y border-line bg-white py-16 sm:py-20">
+        <div className="wrap grid items-center gap-10 md:grid-cols-[260px_1fr]">
+          <div className="arch relative mx-auto aspect-[4/5] w-52 bg-leaf-500 md:w-full">
+            {profile.principalPhotoUrl ? <Image src={profile.principalPhotoUrl} alt={profile.principalName ? `Foto ${profile.principalName}` : "Foto kepala sekolah"} fill unoptimized sizes="260px" className="object-cover" /> : <div className="tile tile-green size-full" />}
+          </div>
+          <figure>
+            <Quote className="text-sun-400" size={44} strokeWidth={2.5} aria-hidden="true" />
+            <p className="kicker mt-2">Sambutan kepala sekolah</p>
+            <blockquote className="prose-school mt-3 max-w-3xl font-heading text-xl font-semibold leading-relaxed sm:text-2xl">{profile.principalMessage}</blockquote>
+            {profile.principalName && <figcaption className="mt-6"><span className="block text-lg font-bold">{profile.principalName}</span><span className="text-ink-soft">Kepala SDIT Al-Ikhlas Serpong</span></figcaption>}
+          </figure>
+        </div>
+      </section>
+    )}
 
-    <section className="bg-white py-20"><div className="container-shell"><div className="max-w-xl"><span className="eyebrow">Mengenal sekolah</span><h2 className="mt-3 font-heading text-3xl font-black">Ruang tumbuh untuk<br />belajar dan berbuat baik.</h2><p className="mt-4 leading-7 text-slate-600">{profile?.history || "Profil dan sejarah sekolah akan dilengkapi oleh administrator."}</p></div><div className="mt-9 rounded-3xl bg-[#f8fbff] p-7"><div className="grid gap-7 md:grid-cols-2"><div><h3 className="font-heading text-lg font-extrabold">Visi sekolah</h3><p className="mt-2 text-sm leading-6 text-slate-600">{profile?.vision || "Visi sekolah belum diisi oleh admin."}</p></div><div><h3 className="font-heading text-lg font-extrabold">Misi sekolah</h3>{profile?.mission.length ? <ul className="mt-2 list-inside list-disc space-y-1 text-sm leading-6 text-slate-600">{profile.mission.map((item, i) => <li key={i}>{item}</li>)}</ul> : <p className="mt-2 text-sm leading-6 text-slate-600">Misi sekolah belum diisi oleh admin.</p>}</div></div></div></div></section>
+    {/* Vision & mission */}
+    {(profile?.vision || !!profile?.mission.length) && (
+      <section className="wrap grid gap-10 py-16 sm:py-20 lg:grid-cols-[.9fr_1.1fr]">
+        <div>
+          <SectionHeading kicker="Arah kami" title={<>Visi <span className="mark mark-blue">sekolah</span></>} />
+          {profile?.vision && <p className="mt-6 font-heading text-2xl font-bold leading-snug text-sky-900">{profile.vision}</p>}
+          <Link href="/profil" className="link mt-6 inline-block">Baca profil lengkap</Link>
+        </div>
+        {!!profile?.mission.length && (
+          <div className="rounded-3xl bg-sky-50 p-7 sm:p-9">
+            <h3 className="font-heading text-xl font-extrabold">Misi</h3>
+            <ol className="mt-5 space-y-4">
+              {profile.mission.map((item, index) => (
+                <li key={index} className="flex gap-4"><span className="grid size-8 shrink-0 place-items-center rounded-full bg-white font-heading font-black text-sky-700">{index + 1}</span><span className="pt-1">{item}</span></li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </section>
+    )}
 
-    <section className="container-shell section-space"><div className="grid gap-8 lg:grid-cols-2"><div><span className="eyebrow">Belajar dengan arah</span><h2 className="mt-3 font-heading text-3xl font-black">Program unggulan</h2>{profile?.learningPrograms.length ? <ul className="mt-5 grid gap-3 sm:grid-cols-2">{profile.learningPrograms.map((program, index) => <li key={`${program}-${index}`} className="soft-card flex items-center gap-3 p-4"><span className="grid size-9 shrink-0 place-items-center rounded-xl bg-sky-50 font-heading font-black text-school-blue">{index + 1}</span><span className="text-sm font-bold">{program}</span></li>)}</ul> : <p className="mt-4 rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-600">Program unggulan belum diisi oleh admin sekolah.</p>}</div><div><span className="eyebrow">Nilai tambah sekolah</span><h2 className="mt-3 font-heading text-3xl font-black">Keunggulan sekolah</h2>{profile?.strengths.length ? <ul className="mt-5 space-y-3">{profile.strengths.map((strength, index) => <li key={`${strength}-${index}`} className="rounded-2xl bg-emerald-50 p-4 text-sm font-semibold leading-6 text-slate-700">{strength}</li>)}</ul> : <p className="mt-4 rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-600">Keunggulan sekolah akan ditampilkan setelah dilengkapi admin.</p>}</div></div></section>
+    {/* Programmes & strengths */}
+    {(programs.length > 0 || strengths.length > 0) && (
+      <section className="bg-white py-16 sm:py-20">
+        <div className="wrap">
+          <SectionHeading kicker="Kegiatan belajar" title={<>Program dan <span className="mark mark-green">keunggulan</span></>} action={<Link href="/akademik" className="link">Lihat halaman akademik</Link>} />
+          <div className="mt-10 grid gap-10 lg:grid-cols-2">
+            {programs.length > 0 && <div><h3 className="font-heading text-lg font-extrabold">Program unggulan</h3>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2">{programs.map((program, index) => <li key={`${program}-${index}`} className={`border-l-4 ${accents[index % 4]} rounded-r-xl bg-paper py-3 pl-4 pr-3 font-semibold`}>{program}</li>)}</ul></div>}
+            {strengths.length > 0 && <div><h3 className="font-heading text-lg font-extrabold">Mengapa memilih kami</h3>
+              <ul className="mt-4 space-y-3">{strengths.map((item, index) => <li key={`${item}-${index}`} className="flex gap-3"><Star className="mt-1.5 size-4 shrink-0" color={["#2498dc", "#34b879", "#ffc94a", "#ff8a55"][index % 4]} /><span>{item}</span></li>)}</ul></div>}
+          </div>
+        </div>
+      </section>
+    )}
 
-    <section className="bg-white py-16"><div className="container-shell grid gap-10 lg:grid-cols-2"><div><div className="flex items-end justify-between gap-4"><div><span className="eyebrow">Apresiasi siswa</span><h2 className="mt-2 font-heading text-2xl font-black">Prestasi terbaru</h2></div><Link href="/prestasi" className="text-sm font-bold text-school-blue">Semua prestasi →</Link></div>{achievements.length ? <div className="mt-5 space-y-3">{achievements.map((item) => <article key={item.id} className="soft-card flex items-center gap-4 p-4">{item.imageUrl ? <Image src={item.imageUrl} alt="" width={64} height={64} unoptimized className="size-16 rounded-xl object-cover" /> : <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-amber-50 text-2xl">🏆</span>}<div><p className="text-xs font-bold text-school-orange">{item.category || "Prestasi"}</p><h3 className="mt-1 font-bold">{item.title}</h3></div></article>)}</div> : <p className="mt-5 rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-600">Prestasi akan ditampilkan setelah dipublikasikan sekolah.</p>}</div><div><div className="flex items-end justify-between gap-4"><div><span className="eyebrow">Momen sekolah</span><h2 className="mt-2 font-heading text-2xl font-black">Galeri kegiatan</h2></div><Link href="/galeri" className="text-sm font-bold text-school-blue">Semua album →</Link></div>{galleries.length ? <div className="mt-5 grid grid-cols-3 gap-3">{galleries.map((album) => { const cover = album.coverUrl || album.images[0]?.imageUrl; return <Link href="/galeri" key={album.id} className="group overflow-hidden rounded-2xl bg-sky-50"><div className="relative aspect-square">{cover ? <Image src={cover} alt={album.title} fill unoptimized sizes="(max-width: 768px) 33vw, 180px" className="object-cover transition group-hover:scale-105" /> : <span className="grid size-full place-items-center text-3xl">📷</span>}</div><p className="p-3 text-xs font-bold leading-5">{album.title}</p></Link>; })}</div> : <p className="mt-5 rounded-2xl border border-dashed border-slate-300 p-5 text-sm text-slate-600">Album kegiatan akan ditampilkan setelah dipublikasikan sekolah.</p>}</div></div></section>
+    {/* News & announcements */}
+    <section className="wrap py-16 sm:py-20">
+      <SectionHeading kicker="Kabar sekolah" title={<>Berita & <span className="mark mark-orange">pengumuman</span></>} action={<Link href="/berita" className="link">Semua berita</Link>} />
+      <div className={`mt-10 grid gap-8 ${announcements.length ? "lg:grid-cols-[1.5fr_1fr]" : ""}`}>
+        {featured ? (
+          <div className="grid gap-6">
+            <Link href={`/berita/${featured.slug}`} className="group grid overflow-hidden rounded-3xl border border-line bg-white md:grid-cols-2">
+              <div className="relative aspect-[16/10] bg-sky-100 md:aspect-auto">{featured.coverImageUrl ? <Image src={featured.coverImageUrl} alt="" fill unoptimized sizes="(max-width:768px) 100vw, 400px" className="object-cover" /> : <div className="tile size-full" />}</div>
+              <div className="p-6 sm:p-7">
+                <p className="text-sm font-semibold text-sky-700">{featured.category?.name ?? "Berita"}{featured.publishedAt ? `, ${dateLong(featured.publishedAt)}` : ""}</p>
+                <h3 className="mt-2 font-heading text-2xl font-extrabold leading-snug group-hover:text-sky-700">{featured.title}</h3>
+                {featured.excerpt && <p className="mt-3 line-clamp-3 text-ink-soft">{featured.excerpt}</p>}
+              </div>
+            </Link>
+            {otherPosts.length > 0 && <ul className="divide-y divide-line border-y border-line">{otherPosts.map((post) => (
+              <li key={post.id}><Link href={`/berita/${post.slug}`} className="flex items-baseline justify-between gap-6 py-4 hover:text-sky-700"><span className="font-bold">{post.title}</span>{post.publishedAt && <time className="shrink-0 text-sm text-ink-faint">{post.publishedAt.toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</time>}</Link></li>
+            ))}</ul>}
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-dashed border-line bg-white p-8 sm:p-10">
+            <h3 className="font-heading text-xl font-extrabold">Belum ada berita</h3>
+            <p className="mt-2 max-w-md text-ink-soft">Kabar kegiatan sekolah akan tampil di sini setelah diterbitkan.</p>
+          </div>
+        )}
 
-    <section className="container-shell section-space"><div className="flex flex-wrap items-end justify-between gap-4"><div><span className="eyebrow">Kabar sekolah</span><h2 className="mt-3 font-heading text-3xl font-black">Berita & pengumuman</h2></div><Link href="/berita" className="inline-flex items-center gap-2 text-sm font-bold text-school-blue">Semua berita <ArrowRight size={16} /></Link></div>
-      {announcements.length > 0 && <div className="mt-7 grid gap-3 md:grid-cols-2">{announcements.map((item) => <Link key={item.id} href={`/berita/${item.slug}`} className="rounded-2xl border border-amber-100 bg-amber-50 p-5"><span className="text-xs font-extrabold uppercase tracking-wider text-amber-700">Pengumuman</span><h3 className="mt-2 font-bold">{item.title}</h3></Link>)}</div>}
-      {posts.length ? <div className="mt-7 grid gap-5 md:grid-cols-3">{posts.map((post) => <article className="soft-card p-6" key={post.id}><p className="text-xs font-bold text-school-blue">{post.publishedAt?.toLocaleDateString("id-ID")}</p><h3 className="mt-3 font-heading text-xl font-extrabold">{post.title}</h3><p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{post.excerpt || "Baca berita selengkapnya."}</p><Link href={`/berita/${post.slug}`} className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-school-blue">Baca selengkapnya <ArrowRight size={15} /></Link></article>)}</div> : <div className="mt-7 rounded-3xl border border-dashed border-slate-300 bg-white/60 p-10 text-center"><p className="font-heading text-lg font-bold">Berita terbaru akan ditampilkan di sini.</p><p className="mt-2 text-sm text-slate-500">Belum ada konten yang dipublikasikan oleh admin.</p></div>}
+        {announcements.length > 0 && (
+          <aside className="tile-sun tile rounded-3xl p-3" aria-labelledby="papan-pengumuman">
+            <div className="h-full rounded-[18px] bg-white p-6">
+              <h3 id="papan-pengumuman" className="font-heading text-xl font-extrabold">Papan pengumuman</h3>
+              <ul className="mt-4 space-y-5">{announcements.map((item) => (
+                <li key={item.id} className="border-b border-dashed border-line pb-5 last:border-0 last:pb-0">
+                  <p className="font-bold">{item.title}</p>
+                  <p className="mt-1 line-clamp-3 text-sm text-ink-soft">{item.body}</p>
+                </li>
+              ))}</ul>
+            </div>
+          </aside>
+        )}
+      </div>
     </section>
-    <section className="container-shell pb-20"><div className="overflow-hidden rounded-[32px] bg-[#e9f8f0] px-7 py-10 sm:px-12 sm:py-12"><div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center"><div><span className="eyebrow !text-emerald-700">Penerimaan peserta didik baru</span><h2 className="mt-2 font-heading text-3xl font-black">Siap memulai perjalanan belajar?</h2><p className="mt-3 text-slate-600">Cek informasi periode PPDB yang sedang dibuka.</p></div><Link href="/ppdb" className="btn-primary !bg-school-green">Informasi PPDB <ArrowRight size={16} /></Link></div></div></section>
+
+    {/* Gallery & achievements */}
+    {(galleries.length > 0 || achievements.length > 0) && (
+      <section className="border-t border-line bg-white py-16 sm:py-20">
+        <div className="wrap grid gap-14 lg:grid-cols-[1.3fr_1fr]">
+          {galleries.length > 0 && <div>
+            <SectionHeading kicker="Momen sekolah" title="Galeri kegiatan" action={<Link href="/galeri" className="link">Buka galeri</Link>} />
+            <div className="mt-8 grid grid-cols-3 grid-rows-2 gap-3">
+              {galleries.map((album, index) => { const cover = album.coverUrl || album.images[0]?.imageUrl; return (
+                <Link key={album.id} href="/galeri" className={`group relative overflow-hidden rounded-2xl bg-sky-100 ${index === 0 ? "col-span-2 row-span-2 aspect-square" : "aspect-square"}`}>
+                  {cover ? <Image src={cover} alt={album.title} fill unoptimized sizes="(max-width:768px) 50vw, 300px" className="object-cover" /> : <div className="tile size-full" />}
+                  <span className="absolute inset-x-2 bottom-2 rounded-lg bg-white/95 px-2.5 py-1.5 text-xs font-bold sm:text-sm">{album.title}</span>
+                </Link>
+              ); })}
+            </div>
+          </div>}
+          {achievements.length > 0 && <div>
+            <SectionHeading kicker="Apresiasi" title="Prestasi siswa" action={<Link href="/prestasi" className="link">Semua prestasi</Link>} />
+            <ul className="mt-8 space-y-4">{achievements.map((item) => (
+              <li key={item.id} className="flex items-center gap-4 rounded-2xl border border-line p-3">
+                <div className="arch relative size-16 shrink-0 bg-sun-400">{item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="64px" className="object-cover" /> : <div className="tile tile-sun size-full" />}</div>
+                <div><p className="font-bold leading-snug">{item.title}</p><p className="text-sm text-ink-soft">{[item.category, item.achievedAt?.getFullYear()].filter(Boolean).join(", ")}</p></div>
+              </li>
+            ))}</ul>
+          </div>}
+        </div>
+      </section>
+    )}
+
+    {/* PPDB call to action */}
+    <section className="wrap pb-20 pt-4">
+      <div className="tile tile-green overflow-hidden rounded-[28px] p-3 sm:p-4">
+        <div className="grid items-center gap-6 rounded-[20px] bg-white p-7 sm:p-10 md:grid-cols-[1fr_auto]">
+          <div>
+            <p className="kicker !text-leaf-700">{period ? `PPDB tahun ajaran ${period.academicYear}` : "Penerimaan peserta didik baru"}</p>
+            <h2 className="mt-2 font-heading text-3xl font-black">{isOpen ? "Pendaftaran sudah dibuka" : "Siapkan pendaftaran putra-putri Anda"}</h2>
+            <p className="mt-2 max-w-xl text-ink-soft">{isOpen && period ? `Daftar secara online hingga ${dateLong(period.closesAt)}.${period.requirements.length ? ` Siapkan ${period.requirements.map((r) => r.label.toLowerCase()).join(", ")}.` : ""}` : "Lihat persyaratan dan alur pendaftaran, lalu daftar online saat periode dibuka."}</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/ppdb" className="btn btn-green">{isOpen ? "Isi formulir" : "Lihat informasi PPDB"}</Link>
+            <Link href="/ppdb/cek-status" className="btn btn-secondary">Cek status</Link>
+          </div>
+        </div>
+      </div>
+    </section>
   </>;
 }

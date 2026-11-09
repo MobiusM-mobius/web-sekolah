@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Periksa kembali data periode dan persyaratan." }, { status: 400 });
   try {
     const period = await db.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(80421, 2)`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(80421, 2)::text AS locked`;
       if (parsed.data.active) await tx.ppdbPeriod.updateMany({ where: { active: true }, data: { active: false } });
       const created = await tx.ppdbPeriod.create({ data: { academicYear: parsed.data.academicYear, title: parsed.data.title, description: parsed.data.description || null, opensAt: new Date(parsed.data.opensAt), closesAt: new Date(parsed.data.closesAt), quota: parsed.data.quota, feeInformation: parsed.data.feeInformation || null, faqs: parsed.data.faqs, active: parsed.data.active, requirements: { create: parsed.data.requirements.map((item, sortOrder) => ({ ...item, description: item.description || null, sortOrder })) } }, include: { requirements: true } });
       await tx.adminActivityLog.create({ data: { userId: user.id, action: "CREATE_PPDB_PERIOD", entity: "PpdbPeriod", entityId: created.id } });

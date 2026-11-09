@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isUuid } from "@/lib/ids";
 import { requireRole } from "@/lib/authorization";
 import { contentSchemas, isContentResource } from "@/lib/validation/content";
 import { deleteContent, saveContent } from "@/services/admin-content";
@@ -9,6 +10,7 @@ type Context = { params: Promise<{ resource: string; id: string }> };
 export async function PATCH(request: Request, { params }: Context) {
   const user = await requireRole(["SUPER_ADMIN", "ADMIN_WEBSITE", "EDITOR"]);
   const { resource: name, id } = await params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Konten tidak ditemukan." }, { status: 404 });
   if (!isContentResource(name)) return NextResponse.json({ error: "Modul tidak ditemukan." }, { status: 404 });
   const body = await request.json().catch(() => null);
   const parsed = contentSchemas[name].safeParse(body);
@@ -23,6 +25,7 @@ export async function PATCH(request: Request, { params }: Context) {
 export async function DELETE(_request: Request, { params }: Context) {
   const user = await requireRole(["SUPER_ADMIN", "ADMIN_WEBSITE"]);
   const { resource: name, id } = await params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Konten tidak ditemukan." }, { status: 404 });
   if (!isContentResource(name)) return NextResponse.json({ error: "Modul tidak ditemukan." }, { status: 404 });
   try {
     await deleteContent(name, id);

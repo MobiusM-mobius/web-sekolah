@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/nunito";
+import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 
 const appUrl = process.env.APP_URL ?? "http://localhost:3000";
@@ -17,5 +19,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="id"><body>{children}</body></html>;
+  return <html lang="id"><body className="flex min-h-screen flex-col">{children}</body></html>;
 }

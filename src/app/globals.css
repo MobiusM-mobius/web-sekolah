@@ -1,44 +1,116 @@
 @import "tailwindcss";
 
-:root {
-  --blue: #2498dc;
-  --green: #34b879;
-  --yellow: #ffc94a;
-  --orange: #ff8a55;
-  --background: #f8fbff;
-  --foreground: #243447;
+/* Palette: brand colours from the brief, each with a fixed ramp. Components pick from these only. */
+@theme {
+  --color-sky-50: #eef7fd;
+  --color-sky-100: #d6ecfa;
+  --color-sky-200: #a9d6f3;
+  --color-sky-500: #2498dc;
+  --color-sky-600: #1782c2;
+  --color-sky-700: #136798;
+  --color-sky-900: #0f3a56;
+
+  --color-leaf-50: #ecf8f2;
+  --color-leaf-100: #cfeedd;
+  --color-leaf-500: #34b879;
+  --color-leaf-700: #1f7a4f;
+
+  --color-sun-50: #fff8e5;
+  --color-sun-100: #ffedbf;
+  --color-sun-400: #ffc94a;
+  --color-sun-700: #8a5b00;
+
+  --color-clay-50: #fff1ea;
+  --color-clay-100: #ffd9c7;
+  --color-clay-400: #ff8a55;
+  --color-clay-700: #a8471c;
+
+  --color-paper: #f8fbff;
+  --color-ink: #243447;
+  --color-ink-soft: #52657a;
+  --color-ink-faint: #8193a6;
+  --color-line: #dfe8f0;
+  --color-night: #15324a;
+
+  --font-heading: "Nunito Variable", "Nunito", ui-rounded, sans-serif;
+  --font-body: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-school-blue: var(--blue);
-  --color-school-green: var(--green);
-  --color-school-yellow: var(--yellow);
-  --color-school-orange: var(--orange);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-heading: "Nunito", "Trebuchet MS", sans-serif;
-  --font-body: "Plus Jakarta Sans", "Avenir Next", sans-serif;
-}
-
-* { box-sizing: border-box; }
+@layer base {
 html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+
 body {
   margin: 0;
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-paper);
+  color: var(--color-ink);
   font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
-h1, h2, h3, h4 { font-family: var(--font-heading); }
+h1, h2, h3, h4 { font-family: var(--font-heading); letter-spacing: -0.01em; text-wrap: balance; }
+p { text-wrap: pretty; }
 a { color: inherit; text-decoration: none; }
-button, input, textarea, select { font: inherit; }
-::selection { background: #b9e4fb; }
+button, input, textarea, select { font: inherit; color: inherit; }
+::selection { background: var(--color-sun-100); }
+:focus-visible { outline: 3px solid var(--color-sky-500); outline-offset: 3px; border-radius: 6px; }
+}
 
-.container-shell { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
-.soft-card { border: 1px solid #e8f0f6; background: white; border-radius: 24px; box-shadow: 0 12px 40px #365b7410; }
-.section-space { padding-block: 84px; }
-.eyebrow { color: #1676ad; font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: .55rem; border-radius: 999px; background: var(--blue); color: white; padding: .9rem 1.35rem; font-weight: 800; box-shadow: 0 8px 20px #2498dc30; transition: transform .18s, background .18s; }
-.btn-primary:hover { background: #167fbd; transform: translateY(-2px); }
-.btn-secondary { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #dbe8ef; border-radius: 999px; background: white; padding: .85rem 1.25rem; color: #355063; font-weight: 800; }
-@media (max-width: 640px) { .container-shell { width: min(100% - 28px, 1160px); } .section-space { padding-block: 58px; } }
+@layer components {
+
+.wrap { width: min(1180px, calc(100% - 40px)); margin-inline: auto; }
+@media (max-width: 640px) { .wrap { width: calc(100% - 32px); } }
+
+/* Highlighter stroke behind one word of a heading — the site's recurring "buku tulis" mark. */
+.mark { background: linear-gradient(transparent 58%, var(--mark, var(--color-sun-400)) 58%, var(--mark, var(--color-sun-400)) 90%, transparent 90%); padding-inline: .08em; }
+.mark-blue { --mark: var(--color-sky-200); }
+.mark-green { --mark: var(--color-leaf-100); }
+.mark-orange { --mark: var(--color-clay-100); }
+
+.kicker { display: inline-flex; align-items: center; gap: .5rem; font-weight: 700; font-size: .9rem; color: var(--color-sky-700); }
+.kicker::before { content: ""; width: 10px; height: 10px; background: currentColor; clip-path: polygon(50% 0, 61% 35%, 100% 50%, 61% 65%, 50% 100%, 39% 65%, 0 50%, 39% 35%); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 46px; padding: .7rem 1.3rem; border-radius: 14px; font-weight: 700; font-size: .95rem; line-height: 1.2; transition: background-color .15s, border-color .15s, color .15s; cursor: pointer; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--color-sky-500); color: white; box-shadow: inset 0 -3px 0 var(--color-sky-700); }
+.btn-primary:hover:not(:disabled) { background: var(--color-sky-600); }
+.btn-green { background: var(--color-leaf-500); color: white; box-shadow: inset 0 -3px 0 var(--color-leaf-700); }
+.btn-green:hover:not(:disabled) { background: var(--color-leaf-700); }
+.btn-secondary { background: white; color: var(--color-ink); border: 1.5px solid var(--color-line); }
+.btn-secondary:hover:not(:disabled) { border-color: var(--color-sky-500); color: var(--color-sky-700); }
+.btn-danger { background: white; color: var(--color-clay-700); border: 1.5px solid var(--color-clay-100); }
+.btn-danger:hover:not(:disabled) { background: var(--color-clay-50); }
+.btn-sm { min-height: 36px; padding: .4rem .85rem; font-size: .85rem; border-radius: 10px; }
+
+.panel { background: white; border: 1px solid var(--color-line); border-radius: 18px; }
+.field { display: block; width: 100%; margin-top: .4rem; padding: .7rem .9rem; border: 1.5px solid var(--color-line); border-radius: 12px; background: white; font-size: .95rem; transition: border-color .15s; }
+.field:focus { border-color: var(--color-sky-500); outline: none; box-shadow: 0 0 0 3px var(--color-sky-100); }
+.field[aria-invalid="true"] { border-color: var(--color-clay-400); }
+.label { display: block; font-size: .9rem; font-weight: 700; color: var(--color-ink); }
+.hint { display: block; margin-top: .3rem; font-size: .8rem; color: var(--color-ink-soft); font-weight: 400; }
+.error-text { display: block; margin-top: .3rem; font-size: .8rem; color: var(--color-clay-700); font-weight: 600; }
+
+.link { color: var(--color-sky-700); font-weight: 700; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; text-decoration-color: var(--color-sky-200); }
+.link:hover { text-decoration-color: var(--color-sky-500); }
+
+/* Arch frame: the mihrab silhouette used for photos throughout the public site. */
+.arch { border-radius: 999px 999px 22px 22px; overflow: hidden; }
+
+/* Islamic 8-point star (khatam) tile, drawn as an SVG background. */
+.tile { background-color: var(--color-sky-500); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.28' stroke-width='1.5'%3E%3Cpath d='M28 6l6.4 15.6L50 28l-15.6 6.4L28 50l-6.4-15.6L6 28l15.6-6.4z'/%3E%3Crect x='14' y='14' width='28' height='28' transform='rotate(45 28 28)'/%3E%3Ccircle cx='28' cy='28' r='4'/%3E%3C/g%3E%3C/svg%3E"); background-size: 56px 56px; }
+.tile-green { background-color: var(--color-leaf-500); }
+.tile-sun { background-color: var(--color-sun-400); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Cg fill='none' stroke='%238a5b00' stroke-opacity='.22' stroke-width='1.5'%3E%3Cpath d='M28 6l6.4 15.6L50 28l-15.6 6.4L28 50l-6.4-15.6L6 28l15.6-6.4z'/%3E%3Crect x='14' y='14' width='28' height='28' transform='rotate(45 28 28)'/%3E%3Ccircle cx='28' cy='28' r='4'/%3E%3C/g%3E%3C/svg%3E"); }
+.tile-night { background-color: var(--color-night); }
+
+/* Thin frieze of alternating brand colours, used as a section divider instead of gradients. */
+.frieze { height: 8px; background: repeating-linear-gradient(90deg, var(--color-sky-500) 0 48px, var(--color-leaf-500) 48px 96px, var(--color-sun-400) 96px 144px, var(--color-clay-400) 144px 192px); }
+
+.prose-school { font-size: 1.05rem; line-height: 1.85; color: var(--color-ink); white-space: pre-line; }
+
+}
+
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  body { background: white; }
+}

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { GalleryAlbum } from "@/components/gallery-album";
+import Link from "next/link";
 import { db } from "@/lib/db";
+import { PageIntro } from "@/components/brand";
+import { GalleryAlbum } from "@/components/gallery-album";
 
-export const metadata: Metadata = { title: "Galeri", description: "Galeri kegiatan SDIT Al-Ikhlas Serpong." };
+export const metadata: Metadata = { title: "Galeri", description: "Dokumentasi kegiatan SDIT Al-Ikhlas Serpong.", alternates: { canonical: "/galeri" } };
 type SearchParams = Promise<{ kategori?: string }>;
 
 export default async function GalleryPage({ searchParams }: { searchParams: SearchParams }) {
@@ -11,5 +13,28 @@ export default async function GalleryPage({ searchParams }: { searchParams: Sear
     db.gallery.findMany({ where: { visible: true, ...(kategori ? { category: kategori } : {}) }, orderBy: { createdAt: "desc" }, include: { images: { orderBy: { sortOrder: "asc" } } } }).catch(() => []),
     db.gallery.findMany({ where: { visible: true, category: { not: null } }, distinct: ["category"], select: { category: true }, orderBy: { category: "asc" } }).catch(() => []),
   ]);
-  return <div className="container-shell section-space"><span className="eyebrow">Cerita dalam gambar</span><h1 className="mt-3 font-heading text-4xl font-black">Galeri kegiatan</h1><div className="mt-6 flex flex-wrap gap-2"><a className={`rounded-full px-4 py-2 text-sm font-bold ${!kategori ? "bg-school-blue text-white" : "bg-white text-slate-600"}`} href="/galeri">Semua</a>{categories.map(({ category }) => category && <a key={category} className={`rounded-full px-4 py-2 text-sm font-bold ${kategori === category ? "bg-school-blue text-white" : "bg-white text-slate-600"}`} href={`/galeri?kategori=${encodeURIComponent(category)}`}>{category}</a>)}</div>{galleries.length ? <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{galleries.map((gallery) => <GalleryAlbum key={gallery.id} title={gallery.title} description={gallery.description} category={gallery.category} coverUrl={gallery.coverUrl} images={gallery.images} />)}</div> : <p className="mt-8 rounded-3xl border border-dashed border-slate-300 p-10 text-center text-slate-600">Album galeri belum dipublikasikan.</p>}</div>;
+  const chip = (active: boolean) => `rounded-full px-4 py-1.5 text-sm font-semibold ${active ? "bg-ink text-white" : "bg-white text-ink-soft ring-1 ring-line hover:text-ink"}`;
+
+  return <>
+    <PageIntro tone="sun" kicker="Momen sekolah" title={<>Galeri <span className="mark">kegiatan</span></>} intro="Dokumentasi kegiatan belajar, ibadah, dan acara sekolah." />
+    <div className="wrap py-12">
+      {categories.length > 0 && (
+        <nav className="flex flex-wrap gap-2" aria-label="Kategori galeri">
+          <Link href="/galeri" className={chip(!kategori)} aria-current={!kategori ? "page" : undefined}>Semua</Link>
+          {categories.map(({ category }) => category && <Link key={category} href={`/galeri?kategori=${encodeURIComponent(category)}`} className={chip(kategori === category)} aria-current={kategori === category ? "page" : undefined}>{category}</Link>)}
+        </nav>
+      )}
+      {galleries.length ? (
+        <ul className="mt-8 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">{galleries.map((gallery, i) => (
+          <li key={gallery.id}><GalleryAlbum tone={i % 3} title={gallery.title} description={gallery.description} category={gallery.category} coverUrl={gallery.coverUrl} images={gallery.images} /></li>
+        ))}</ul>
+      ) : (
+        <div className="mt-8 rounded-3xl border border-dashed border-line bg-white p-10 text-center">
+          <h2 className="font-heading text-xl font-extrabold">{kategori ? "Belum ada album di kategori ini" : "Belum ada album"}</h2>
+          <p className="mt-2 text-ink-soft">Foto kegiatan akan tampil di sini setelah dipublikasikan sekolah.</p>
+          {kategori && <Link href="/galeri" className="btn btn-secondary mt-5">Lihat semua album</Link>}
+        </div>
+      )}
+    </div>
+  </>;
 }

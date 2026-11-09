@@ -8,13 +8,23 @@ export function AdminLoginForm() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+
   function submit(formData: FormData) {
     setError("");
     startTransition(async () => {
-      const result = await signIn("credentials", { email: formData.get("email"), password: formData.get("password"), redirect: false, redirectTo: "/admin" });
-      if (result?.error) setError("Email atau kata sandi tidak sesuai.");
-      else router.push("/admin");
+      const result = await signIn("credentials", { email: formData.get("email"), password: formData.get("password"), redirect: false, callbackUrl: "/admin" });
+      if (!result || result.error) { setError("Email atau kata sandi tidak sesuai. Setelah beberapa kali gagal, tunggu 15 menit sebelum mencoba lagi."); return; }
+      router.replace("/admin");
+      router.refresh();
     });
   }
-  return <form onSubmit={(event) => { event.preventDefault(); submit(new FormData(event.currentTarget)); }} className="space-y-4"><label className="block text-sm font-bold">Email<input name="email" type="email" required autoComplete="username" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-school-blue" /></label><label className="block text-sm font-bold">Kata sandi<input name="password" type="password" required autoComplete="current-password" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 font-normal outline-none focus:border-school-blue" /></label>{error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}<button disabled={isPending} className="btn-primary w-full disabled:opacity-60">{isPending ? "Memeriksa..." : "Masuk dashboard"}</button></form>;
+
+  return (
+    <form method="post" onSubmit={(event) => { event.preventDefault(); submit(new FormData(event.currentTarget)); }} className="space-y-5">
+      <div><label htmlFor="email" className="label">Email</label><input id="email" name="email" type="email" required autoComplete="username" className="field" /></div>
+      <div><label htmlFor="password" className="label">Kata sandi</label><input id="password" name="password" type="password" required autoComplete="current-password" className="field" /></div>
+      {error && <p role="alert" className="rounded-xl bg-clay-50 p-3 text-sm font-semibold text-clay-700">{error}</p>}
+      <button type="submit" disabled={isPending} className="btn btn-primary w-full">{isPending ? "Memeriksa akun" : "Masuk"}</button>
+    </form>
+  );
 }

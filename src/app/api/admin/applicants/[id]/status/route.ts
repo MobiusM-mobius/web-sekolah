@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { isUuid } from "@/lib/ids";
 import { requireRole } from "@/lib/authorization";
 import { canTransitionApplicant } from "@/lib/ppdb-state";
 
@@ -9,6 +10,7 @@ const inputSchema = z.object({ status: z.enum(["VERIFIED", "REVISION_REQUIRED", 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await requireRole(["SUPER_ADMIN", "ADMIN_PPDB"]);
   const { id } = await params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Data tidak ditemukan." }, { status: 404 });
   const body = await request.json().catch(() => null);
   const parsed = inputSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Data perubahan status tidak valid." }, { status: 400 });

@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Dev-only: Next.js blocks dev assets for unlisted origins, which leaves pages un-hydrated when opened via 127.0.0.1 or a preview proxy.
+  allowedDevOrigins: ["127.0.0.1", "*.preview.usehoplite.com"],
   images: {
     remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
   },

@@ -1,18 +1,20 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isUuid } from "@/lib/ids";
 import { requireRole } from "@/lib/authorization";
 import { updateAdminUserSchema } from "@/lib/validation/admin-user";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const actor = await requireRole(["SUPER_ADMIN"]);
   const { id } = await params;
+  if (!isUuid(id)) return NextResponse.json({ error: "Data tidak ditemukan." }, { status: 404 });
   const body = await request.json().catch(() => null);
   const parsed = updateAdminUserSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Data akun tidak valid." }, { status: 400 });
   try {
     const user = await db.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(80421, 1)`;
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(80421, 1)::text AS locked`;
       const current = await tx.user.findUnique({ where: { id }, include: { role: true } });
       if (!current) throw new Error("USER_NOT_FOUND");
       const removesSuperAdmin = current.role.name === "SUPER_ADMIN" && (!parsed.data.active || parsed.data.role !== "SUPER_ADMIN");

@@ -1,10 +1,42 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { db } from "@/lib/db";
+import { PageIntro } from "@/components/brand";
+import { dateLong } from "@/lib/school";
 
-export const metadata: Metadata = { title: "Prestasi", description: "Prestasi siswa dan sekolah SDIT Al-Ikhlas Serpong." };
+export const metadata: Metadata = { title: "Prestasi", description: "Prestasi siswa SDIT Al-Ikhlas Serpong.", alternates: { canonical: "/prestasi" } };
 
 export default async function AchievementsPage() {
-  const achievements = await db.achievement.findMany({ where: { visible: true }, orderBy: { achievedAt: "desc" } }).catch(() => []);
-  return <div className="container-shell section-space"><span className="eyebrow">Apresiasi & pencapaian</span><h1 className="mt-3 font-heading text-4xl font-black">Prestasi</h1><p className="mt-3 text-slate-600">Dokumentasi prestasi yang dipublikasikan oleh sekolah.</p>{achievements.length ? <div className="mt-8 grid gap-5 md:grid-cols-2">{achievements.map((item) => <article key={item.id} className="soft-card overflow-hidden sm:flex">{item.imageUrl ? <Image src={item.imageUrl} alt="" width={320} height={320} unoptimized className="aspect-square w-full object-cover sm:w-40" /> : <div className="grid aspect-square w-full place-items-center bg-amber-50 text-5xl sm:w-40">🏆</div>}<div className="p-6"><p className="text-xs font-bold uppercase tracking-wider text-school-orange">{item.category ?? "Prestasi"}{item.achievedAt ? ` · ${item.achievedAt.getFullYear()}` : ""}</p><h2 className="mt-2 font-heading text-xl font-extrabold">{item.title}</h2><p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p></div></article>)}</div> : <div className="mt-8 rounded-3xl border border-dashed border-slate-300 p-10 text-center"><h2 className="font-heading text-xl font-bold">Informasi prestasi belum tersedia</h2><p className="mt-2 text-sm text-slate-600">Prestasi hanya ditampilkan setelah dimasukkan dan dipublikasikan oleh admin sekolah.</p></div>}</div>;
+  const achievements = await db.achievement.findMany({ where: { visible: true }, orderBy: [{ achievedAt: "desc" }, { createdAt: "desc" }] }).catch(() => []);
+  const byYear: Record<string, (typeof achievements)[number][]> = {};
+  for (const item of achievements) (byYear[item.achievedAt ? String(item.achievedAt.getFullYear()) : "Lainnya"] ??= []).push(item);
+
+  return <>
+    <PageIntro tone="sun" kicker="Apresiasi" title={<>Prestasi <span className="mark">siswa</span></>} intro="Capaian siswa yang telah didokumentasikan dan dipublikasikan sekolah." />
+    <div className="wrap py-12">
+      {achievements.length ? (
+        <div className="space-y-12">{Object.entries(byYear).map(([year, items]) => (
+          <section key={year} className="grid gap-6 md:grid-cols-[140px_1fr]" aria-labelledby={`tahun-${year}`}>
+            <h2 id={`tahun-${year}`} className="font-heading text-3xl font-black text-sun-700">{year}</h2>
+            <ul className="grid gap-5 sm:grid-cols-2">{items.map((item) => (
+              <li key={item.id} className="flex gap-5 rounded-2xl border border-line bg-white p-4">
+                <div className="arch relative h-28 w-22 shrink-0 bg-sun-400">{item.imageUrl ? <Image src={item.imageUrl} alt="" fill unoptimized sizes="88px" className="object-cover" /> : <div className="tile tile-sun size-full" />}</div>
+                <div className="py-1">
+                  {item.category && <p className="text-sm font-semibold text-clay-700">{item.category}</p>}
+                  <h3 className="font-heading text-lg font-extrabold leading-snug">{item.title}</h3>
+                  {item.achievedAt && <p className="mt-0.5 text-sm text-ink-faint">{dateLong(item.achievedAt)}</p>}
+                  {item.description && <p className="mt-2 line-clamp-3 text-sm text-ink-soft">{item.description}</p>}
+                </div>
+              </li>
+            ))}</ul>
+          </section>
+        ))}</div>
+      ) : (
+        <div className="rounded-3xl border border-dashed border-line bg-white p-10 text-center">
+          <h2 className="font-heading text-xl font-extrabold">Belum ada prestasi yang dipublikasikan</h2>
+          <p className="mt-2 text-ink-soft">Prestasi siswa akan tampil di sini setelah didokumentasikan sekolah.</p>
+        </div>
+      )}
+    </div>
+  </>;
 }
