@@ -1,0 +1,11 @@
+import type { Metadata } from "next";
+import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { db } from "@/lib/db";
+
+export const metadata: Metadata = { title: "Kontak", description: "Alamat dan kontak SDIT Al-Ikhlas Serpong." };
+
+export default async function ContactPage() {
+  const profile = await db.schoolProfile.findFirst().catch(() => null);
+  const whatsapp = profile?.whatsapp?.replace(/\D/g, "");
+  return <div className="container-shell section-space"><span className="eyebrow">Kami siap membantu</span><h1 className="mt-3 font-heading text-4xl font-black">Kontak sekolah</h1><p className="mt-3 max-w-2xl leading-7 text-slate-600">Informasi kontak dapat diperbarui oleh administrator sekolah.</p><div className="mt-8 grid gap-5 md:grid-cols-2"><section className="soft-card space-y-6 p-7"><div className="flex gap-4"><MapPin className="mt-1 text-school-blue" /><div><h2 className="font-bold">Alamat</h2><p className="mt-1 text-sm leading-6 text-slate-600">{profile?.address || "Alamat sekolah belum diisi oleh admin."}</p></div></div>{profile?.phone && <div className="flex gap-4"><Phone className="text-school-blue" /><div><h2 className="font-bold">Telepon</h2><a className="mt-1 text-sm text-slate-600" href={`tel:${profile.phone}`}>{profile.phone}</a></div></div>}{profile?.email && <div className="flex gap-4"><Mail className="text-school-blue" /><div><h2 className="font-bold">Email</h2><a className="mt-1 text-sm text-slate-600" href={`mailto:${profile.email}`}>{profile.email}</a></div></div>}{whatsapp && <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="btn-primary !bg-school-green"><MessageCircle size={18} /> WhatsApp sekolah</a>}</section><section className="overflow-hidden rounded-3xl bg-sky-50">{profile?.mapUrl ? <iframe title="Peta lokasi sekolah" src={profile.mapUrl} className="h-full min-h-72 w-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" /> : <div className="grid min-h-72 place-items-center p-8 text-center"><div><MapPin className="mx-auto text-school-blue" size={34} /><p className="mt-3 font-bold">Peta lokasi belum tersedia</p><p className="mt-1 text-sm text-slate-600">Tautan Google Maps dapat diatur oleh admin.</p></div></div>}</section></div></div>;
+}

@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+coverage/
+private-uploads/
+*.log
+*.tsbuildinfo
+dist/
